@@ -1,77 +1,98 @@
-<!doctype html>
-<html lang="zh-HK">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f7dce3">
-<title>Nagoya 2026</title>
+<!doctype html><html lang="zh-HK"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>D · Japandi Minimal</title>
 <style>
-:root{--pink:#f4cbd6;--deep:#8b4f60;--cream:#fffaf4;--sage:#dce7d7;--ink:#352f31;--muted:#84797c;--card:#fff;--line:#eadfe1}
-*{box-sizing:border-box} body{margin:0;background:var(--cream);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans HK","PingFang HK",sans-serif}
-main{max-width:680px;margin:auto;padding:18px 16px 105px}.hero{background:linear-gradient(135deg,#f8dbe3,#fff4e9);border-radius:26px;padding:22px;margin-bottom:16px}
-.eyebrow{font-size:12px;letter-spacing:1.5px;color:var(--deep);font-weight:800}.hero h1{margin:7px 0 3px;font-size:30px}.sub{color:var(--muted)}
-.pills{display:flex;gap:8px;overflow:auto;margin:16px 0}.pill{white-space:nowrap;border:0;background:#fff;padding:10px 13px;border-radius:999px;box-shadow:0 2px 10px #0000000d}.pill.active{background:var(--deep);color:white}
-.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;margin:12px 0;box-shadow:0 5px 18px #6e4d560d}
-.row{display:flex;gap:12px}.time{width:54px;font-weight:800;color:var(--deep)}.event{flex:1}.event b{display:block;margin-bottom:4px}.note{font-size:13px;color:var(--muted);line-height:1.45}
-.tag{display:inline-block;font-size:11px;padding:5px 8px;border-radius:999px;background:var(--sage);margin-top:7px}
-h2{font-size:20px;margin:22px 2px 8px}.hidden{display:none}.actions{display:flex;gap:8px;margin-top:10px}.btn{border:0;border-radius:12px;padding:9px 11px;background:#f7eef0;color:var(--deep);font-weight:700;text-decoration:none;font-size:13px}
-nav{position:fixed;bottom:0;left:0;right:0;background:#fffefef2;backdrop-filter:blur(16px);border-top:1px solid var(--line);display:flex;justify-content:center;padding:8px 4px calc(8px + env(safe-area-inset-bottom))}
-nav button{width:20%;max-width:135px;border:0;background:none;padding:7px 2px;color:var(--muted);font-size:11px}nav button span{display:block;font-size:20px;margin-bottom:2px}nav button.on{color:var(--deep);font-weight:800}
-.ask{position:fixed;right:17px;bottom:86px;border:0;border-radius:999px;background:var(--deep);color:#fff;padding:13px 16px;font-weight:800;box-shadow:0 8px 24px #5b35444d}
-.check label{display:block;padding:10px 0;border-bottom:1px solid var(--line)} input{accent-color:var(--deep)}
-.smalltitle{font-weight:800}.split{border-left:4px solid var(--pink);padding-left:11px}
-</style></head>
-<body><main>
-<section id="today">
-<div class="hero"><div class="eyebrow">NAGOYA FAMILY TRIP</div><h1>名古屋 2026 🌸</h1><div class="sub">9/25–9/30 · 6日5夜 · Family Edition</div></div>
-<h2>Today / Trip at a glance</h2>
-<div class="card"><div class="smalltitle">Next highlight</div><p>🥎 9/27 13:15 Hong Kong vs Singapore<br>📍 安城市総合運動公園ソフトボール場</p><span class="tag">Car 2 · Kitty</span></div>
-<div class="card"><div class="smalltitle">Confirmed meals</div><p>🍢 9/26 18:00 炭火焼鳥しげ 栄本店<br>🥩 9/27 18:30 馬喰一代 名古屋栄<br>🍱 9/29 11:30 鰻う おか冨士</p></div>
-</section>
+*{box-sizing:border-box}body{margin:0}main{max-width:680px;margin:auto;padding:16px 14px 110px}
 
-<section id="trip" class="hidden"><h2>Day-by-day</h2><div class="pills" id="days"></div><div id="timeline"></div></section>
+:root{--bg:#f7f6f2;--ink:#252525;--muted:#7b7b76;--accent:#7a8b7d;--soft:#e8ece7;--card:#fff;--line:#e7e4dc;--nav:#ffffffee}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","PingFang HK",sans-serif}
+.hero{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px}.hero h1{font-size:31px;font-weight:650;letter-spacing:-.5px}
+.card,.mini{box-shadow:none}.eventcard{padding:16px 0}
 
-<section id="map" class="hidden"><h2>Map & quick navigation</h2>
-<div class="card"><b>🏨 The Royal Park Hotel Iconic Nagoya</b><div class="actions"><a class="btn" href="https://www.google.com/maps/search/?api=1&query=The+Royal+Park+Hotel+Iconic+Nagoya">Open Maps</a></div></div>
-<div class="card"><b>🥎 Anjo Sports Park</b><div class="actions"><a class="btn" href="https://www.google.com/maps/search/?api=1&query=安城市総合運動公園ソフトボール場">Open Maps</a></div></div>
-<div class="card"><b>🛍️ LaLaport Nagoya Minato AQULS</b><div class="actions"><a class="btn" href="https://www.google.com/maps/search/?api=1&query=LaLaport+Nagoya+Minato+AQULS">Open Maps</a></div></div>
-<div class="card"><b>⛩️ Atsuta Jingu</b><div class="actions"><a class="btn" href="https://www.google.com/maps/search/?api=1&query=Atsuta+Jingu">Open Maps</a></div></div>
-</section>
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.lang{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 12px;font-weight:800}
+.hidden{display:none}.eyebrow{font-size:11px;letter-spacing:1.5px;font-weight:900;opacity:.8}.sub,.note{color:var(--muted)}.note{font-size:13px;line-height:1.4}
+h1{margin:6px 0 3px}h2{font-size:20px;margin:20px 2px 10px}.pills{display:flex;gap:8px;overflow:auto;margin:12px 0}.pill{white-space:nowrap;border:0;border-radius:999px;padding:10px 13px;background:var(--soft);font-weight:800}.pill.active{background:var(--ink);color:white}
+.eventcard{display:grid;grid-template-columns:72px 1fr;gap:10px;padding:14px 0;border-bottom:1px solid var(--line)}.time{font-weight:900;color:var(--accent)}.dayhead{padding:15px;border-radius:16px;background:var(--soft);margin-bottom:4px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mini{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:15px;margin:10px 0}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--nav);border-top:1px solid var(--line);display:flex;justify-content:center;padding:8px 4px calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+nav button{width:20%;max-width:135px;border:0;background:none;padding:6px 2px;color:var(--muted);font-size:11px}nav .on{color:var(--ink);font-weight:900}nav span{display:block;font-size:20px}
+.ask{position:fixed;right:16px;bottom:86px;border:0;border-radius:999px;background:var(--accent);color:white;padding:13px 16px;font-weight:900;box-shadow:0 8px 24px #0002}
 
-<section id="saved" class="hidden"><h2>Saved places ♡</h2>
-<div class="card">🍳 <b>鳥開総本家</b><div class="note">Nagoya Cochin oyakodon · Day 2 lunch candidate</div></div>
-<div class="card">🍝 <b>こなな</b><div class="note">和パスタ · backup / casual</div></div>
-<div class="card">🔥 <b>アナタと博多</b><div class="note">炭火親子丼 · dinner only · save for another chance</div></div>
-<div class="card">💍 <b>mimi33</b><div class="note">Nagoya Station shopping</div></div>
-</section>
-
-<section id="more" class="hidden"><h2>Travel hub</h2>
-<div class="card"><b>✈️ Flights</b><p class="note">9/25 UO690 · HKG 10:50 → NGO 15:50 (細佬)<br>9/28 UO671 · NGO 20:45 → HKG 00:00+1 (哥哥＋細佬＋嫂嫂)<br>9/30 · NGO → HKG 16:10 (Kitty＋爸媽＋Quinn)</p></div>
-<div class="card"><b>🚙 Cars</b><p class="note">Car 1: Alphard 8人車 · 全程<br>Car 2: 9/27–9/28 · 酒店附近取車 → NGO還車</p></div>
-<div class="card check"><b>🧳 Packing</b>
-<label><input type="checkbox" data-k="passport"> Passports</label><label><input type="checkbox" data-k="diaper"> Quinn diapers + wipes</label>
-<label><input type="checkbox" data-k="stroller"> Stroller</label><label><input type="checkbox" data-k="carrier"> Carrier</label>
-<label><input type="checkbox" data-k="snacks"> Quinn snacks / milk</label><label><input type="checkbox" data-k="charger"> Chargers</label></div>
-</section>
-</main>
-<button class="ask" onclick="ask()">✦ Ask ChatGPT</button>
-<nav>
-<button class="on" onclick="show('today',this)"><span>⌂</span>Today</button><button onclick="show('trip',this)"><span>☷</span>Trip</button>
-<button onclick="show('map',this)"><span>⌖</span>Map</button><button onclick="show('saved',this)"><span>♡</span>Saved</button><button onclick="show('more',this)"><span>•••</span>More</button>
-</nav>
+.eventcard{cursor:pointer;border-radius:14px;padding:14px 8px}.eventcard:active{background:var(--soft)}
+.chev{float:right;color:#aaa;font-size:20px}.sheetback{position:fixed;inset:0;background:#0005;z-index:20;display:none}.sheet{position:absolute;left:0;right:0;bottom:0;max-width:680px;margin:auto;background:var(--bg);border-radius:24px 24px 0 0;padding:18px 18px calc(28px + env(safe-area-inset-bottom));max-height:82vh;overflow:auto}.sheetback.open{display:block}.handle{width:42px;height:5px;border-radius:9px;background:#ccc;margin:0 auto 15px}.sheet h3{font-size:24px;margin:6px 0}.detailrow{padding:13px 0;border-bottom:1px solid var(--line)}.action{border:0;border-radius:999px;padding:11px 14px;background:var(--ink);color:white;font-weight:800;margin:8px 6px 0 0}.action.alt{background:var(--soft);color:var(--ink)}.savedtop{display:flex;gap:8px}.addbox{width:100%;border:1px solid var(--line);background:white;border-radius:14px;padding:13px;font-size:15px}.savecard{background:white;border:1px solid var(--line);border-radius:17px;padding:14px;margin:10px 0}.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.tag{font-size:11px;background:var(--soft);border-radius:999px;padding:5px 8px}.smallbtn{border:1px solid var(--line);background:white;border-radius:999px;padding:7px 10px;margin-top:10px}.hint{font-size:12px;color:var(--muted);margin:8px 2px 14px}
+</style></head><body><main>
+<div class="top"><div class="eyebrow">D · Japandi Minimal</div><button class="lang" onclick="toggleLang()">中文 / EN</button></div>
+<section id="today"><div class="hero"><div class="eyebrow">NAGOYA FAMILY TRIP</div><h1 id="heroTitle"></h1><div class="sub" id="heroSub"></div><div style='margin-top:16px;font-size:28px'>🌿 ☕ ⛩️ 🥎</div></div>
+<h2 id="nextLabel"></h2><div class="card"><div class="eventcard"><div class="time">9/27</div><div><b>🥎 Hong Kong vs Singapore</b><div class="note">13:15 · Anjo Sports Park · Car 2</div></div></div></div>
+<h2 id="resLabel"></h2><div class="grid"><div class="mini">🍢 <b>9/26 18:00</b><div class="note">Shige</div></div><div class="mini">🥩 <b>9/27 18:30</b><div class="note">Bakuro Ichidai</div></div><div class="mini">🍱 <b>9/29 11:30</b><div class="note">Okafuji</div></div><div class="mini">🏨 <b>Royal Park</b><div class="note">Sakae</div></div></div></section>
+<section id="trip" class="hidden"><h2 id="tripLabel"></h2><div class="pills" id="days"></div><div id="timeline"></div></section>
+<section id="map" class="hidden"><h2>Map</h2><div class="card">📍 Sakae / Hotel</div><div class="card">🥎 Anjo Sports Park</div><div class="card">🛍️ LaLaport Nagoya Minato AQULS</div><div class="card">⛩️ Atsuta Jingu</div></section>
+<section id="saved" class="hidden"><h2 id="savedTitle">Saved ♡</h2>
+<div class="savedtop"><input id="placeLink" class="addbox" placeholder="Paste Google Maps link…"><button class="action" onclick="addPlace()">＋</button></div>
+<div class="hint" id="saveHint">Google Maps linkを貼って旅行候補を保存。名前・タグは後から編集できます。</div>
+<div id="savedList"></div></section>
+<section id="more" class="hidden"><h2>More</h2><div class="card">✈️ Flights</div><div class="card">🚙 Cars</div><div class="card">🧳 Packing</div></section>
+</main><button class="ask" onclick="alert('Chat link to be connected in final version')">✦ Ask ChatGPT</button>
+<div id="sheetback" class="sheetback" onclick="closeSheet(event)"><div class="sheet" onclick="event.stopPropagation()"><div class="handle"></div><div id="sheetContent"></div></div></div>
+<nav><button class="on" onclick="show('today',this)"><span>⌂</span><i id="navToday"></i></button><button onclick="show('trip',this)"><span>☷</span><i id="navTrip"></i></button><button onclick="show('map',this)"><span>⌖</span><i id="navMap"></i></button><button onclick="show('saved',this)"><span>♡</span><i id="navSaved"></i></button><button onclick="show('more',this)"><span>•••</span><i id="navMore"></i></button></nav>
 <script>
-const data=[
-["9/25 Fri",[["15:xx","✈️ NGO抵達","Kitty＋爸媽＋Quinn"],["15:50","✈️ UO690抵達","細佬到NGO；等埋後取Alphard"],["17:30–18:30","🏨 Hotel check-in","The Royal Park Hotel Iconic Nagoya"],["約19:00","♡ 全員酒店集合","哥哥＋嫂嫂由東京乘新幹線到名古屋"],["晚上","🍽️ Free dinner","榮散步；按Quinn狀態決定"]]],
-["9/26 Sat",[["08:30","☕ 四間道／円頓寺","小倉紅豆多士＋散步"],["10:00","💄 JR Nagoya Takashimaya","CHANEL · THREE · SHIRO · Hakuhodo"],["12:30","🍴 Nagoya Station lunch","親子丼候選；按當日決定"],["14:00","🛍️ 榮 / Hotel","PARCO · Chiikawa · Risa Magli · Sports shop / Quinn nap"],["18:00","🍢 炭火焼鳥しげ 栄本店","Confirmed reservation"]]],
-["9/27 Sun",[["朝早","🚗 Car 2 pickup","今日兩架車分隊"],["11:30","🥎 Kitty出發去安城","Car 2"],["13:15","🇭🇰 HK vs Singapore 🇸🇬","Softball"],["上午–下午","👨‍👩‍👧 Family free time","Aquarium / Nagoya Port / brunch；唔set死"],["15:45–16:00","♡ LaLaport集合","Akachan Honpo 幫Quinn買嘢"],["17:00","🚙 返回榮","Hotel drop-off + rest"],["18:30","🥩 馬喰一代 名古屋栄","Confirmed reservation"]]],
-["9/28 Mon",[["09:15","🚙 兩架車出發","榮 → Jazz Dream Nagashima"],["10:00","🛍️ Outlet","Shopping · lunch · coffee · Quinn nap"],["16:30–17:00","✈️ 三人離隊","哥哥＋細佬＋嫂嫂 Car 2 → NGO；入油＋還車"],["20:45","✈️ UO671","NGO → HKG"],["晚上","♡ 四人行開始","Kitty＋爸媽＋Quinn；晚餐自由"]]],
-["9/29 Tue",[["09:00","🚙 Hotel出發","前往熱田神宮"],["09:30","⛩️ 熱田神宮","參拜＋影相"],["11:30","🍱 鰻う おか冨士","Confirmed reservation"],["12:30–13:30","😴 Quinn nap buffer","Car / stroller nap"],["13:30","🏮 大須","大須観音＋商店街"],["15:00","☕ Konparu Osu","小倉多士 / Ebi Fry Sandwich"],["16:00–16:30","🏨 返回Hotel","休息；晚餐自由"]]],
-["9/30 Wed",[["09:00","🧳 Check-out","行李上Car 1"],["10:00","🛍️ AEON Mall Tokoname","最後shopping"],["11:00","🛒 Costco Chubu Airport","Shopping + food court"],["12:10–12:30","🚙 離開Costco","入油＋還車"],["13:00–13:15","✈️ 到NGO","Check-in · security · shopping"],["16:10","✈️ NGO → HKG","Bye Nagoya ♡"]]]
+const DATA={"zh": {"title": "名古屋之旅", "subtitle": "2026年9月25–30日 · 6日5夜", "today": "今日", "trip": "行程", "map": "地圖", "saved": "收藏", "more": "更多", "next": "下一個重點", "reservations": "已預約", "days": [["Day 1 · 9/25 Fri", "抵達名古屋・全家集合", [["15:xx", "抵達 NGO", "你＋爸媽＋Quinn"], ["15:50", "UO690 抵達", "細佬到 NGO；等埋後取 Alphard"], ["17:30–18:30", "Hotel Check-in", "The Royal Park Hotel Iconic Nagoya"], ["約19:00", "酒店集合", "哥哥＋嫂嫂由東京乘新幹線到名古屋"], ["晚上", "Free Dinner", "榮散步／按 Quinn 狀態決定"]]], ["Day 2 · 9/26 Sat", "四間道早餐・高島屋・榮", [["08:30", "四間道／円頓寺", "Komeda Coffee＋小倉紅豆多士"], ["10:00", "JR Nagoya Takashimaya", "CHANEL · THREE · SHIRO · Hakuhodo · mimi33"], ["12:30", "名古屋駅 Lunch", "親子丼候選"], ["14:00", "榮自由活動", "PARCO · Risa Magli · Chiikawa · Sports shop / Hotel rest"], ["18:00", "炭火焼鳥しげ 栄本店", "已預約"]]], ["Day 3 · 9/27 Sun", "Softball × Family Free Day × LaLaport", [["11:30", "Kitty 出發去安城", "Car 2"], ["13:15", "Hong Kong vs Singapore", "安城市総合運動公園ソフトボール場"], ["上午", "Family Free Time", "水族館／名古屋港／Brunch"], ["15:45–16:00", "LaLaport Meet Up", "Akachan Honpo 幫 Quinn 買 BB 用品"], ["18:30", "馬喰一代 名古屋栄", "已預約"]]], ["Day 4 · 9/28 Mon", "Jazz Dream Nagashima Outlet", [["09:15", "兩架車出發", "榮 → Jazz Dream Nagashima"], ["10:00", "Outlet", "Shopping · Lunch · Coffee"], ["16:30–17:00", "三人離隊", "哥哥＋細佬＋嫂嫂 Car 2 → NGO"], ["20:45", "UO671", "NGO → HKG"]]], ["Day 5 · 9/29 Tue", "熱田神宮・鰻魚・大須", [["09:30", "熱田神宮", "參拜＋影相"], ["11:30", "鰻う おか冨士", "已預約"], ["12:30–13:30", "Quinn Nap Buffer", "Car / stroller nap"], ["13:30", "大須", "大須観音＋商店街"], ["15:00", "Konparu Osu", "小倉多士 / Ebi Fry Sandwich"]]], ["Day 6 · 9/30 Wed", "常滑・Costco・回香港", [["09:00", "Check-out", "行李上 Car 1"], ["10:00", "AEON Mall Tokoname", "最後 shopping"], ["11:00", "Costco Chubu Airport", "Shopping + Food Court"], ["13:00–13:15", "到 NGO", "Check-in · Security"], ["16:10", "NGO → HKG", "Bye Nagoya ♡"]]]]}, "en": {"title": "Nagoya Trip", "subtitle": "Sep 25–30, 2026 · 6 Days 5 Nights", "today": "Today", "trip": "Trip", "map": "Map", "saved": "Saved", "more": "More", "next": "Next highlight", "reservations": "Reservations", "days": [["Day 1 · Sep 25 Fri", "Arrival & Family Reunion", [["15:xx", "Arrive at NGO", "You + parents + Quinn"], ["15:50", "UO690 arrives", "Younger brother arrives; pick up Alphard together"], ["17:30–18:30", "Hotel check-in", "The Royal Park Hotel Iconic Nagoya"], ["~19:00", "Meet at hotel", "Older brother + sister-in-law arrive from Tokyo by Shinkansen"], ["Evening", "Free dinner", "Sakae stroll / adjust to Quinn"]]], ["Day 2 · Sep 26 Sat", "Shikemichi Breakfast · Takashimaya · Sakae", [["08:30", "Shikemichi / Endoji", "Komeda Coffee + Ogura toast"], ["10:00", "JR Nagoya Takashimaya", "CHANEL · THREE · SHIRO · Hakuhodo · mimi33"], ["12:30", "Lunch at Nagoya Station", "Oyakodon candidate"], ["14:00", "Free time in Sakae", "PARCO · Risa Magli · Chiikawa · Sports shop / Hotel rest"], ["18:00", "Shige Sakae", "Reserved"]]], ["Day 3 · Sep 27 Sun", "Softball × Family Free Day × LaLaport", [["11:30", "Kitty leaves for Anjo", "Car 2"], ["13:15", "Hong Kong vs Singapore", "Anjo Sports Park Softball Field"], ["Morning", "Family free time", "Aquarium / Nagoya Port / Brunch"], ["15:45–16:00", "Meet at LaLaport", "Akachan Honpo for Quinn"], ["18:30", "Bakuro Ichidai Nagoya Sakae", "Reserved"]]], ["Day 4 · Sep 28 Mon", "Jazz Dream Nagashima Outlet", [["09:15", "Leave with both cars", "Sakae → Jazz Dream Nagashima"], ["10:00", "Outlet", "Shopping · Lunch · Coffee"], ["16:30–17:00", "Three depart", "Older brother + younger brother + sister-in-law take Car 2 to NGO"], ["20:45", "UO671", "NGO → HKG"]]], ["Day 5 · Sep 29 Tue", "Atsuta Jingu · Unagi · Osu", [["09:30", "Atsuta Jingu", "Visit + photos"], ["11:30", "Unagi Okafuji", "Reserved"], ["12:30–13:30", "Quinn nap buffer", "Car / stroller nap"], ["13:30", "Osu", "Osu Kannon + shopping street"], ["15:00", "Konparu Osu", "Ogura toast / Ebi Fry Sandwich"]]], ["Day 6 · Sep 30 Wed", "Tokoname · Costco · Fly Home", [["09:00", "Check-out", "Load luggage into Car 1"], ["10:00", "AEON Mall Tokoname", "Final shopping"], ["11:00", "Costco Chubu Airport", "Shopping + Food Court"], ["13:00–13:15", "Arrive NGO", "Check-in · Security"], ["16:10", "NGO → HKG", "Bye Nagoya ♡"]]]]}};
+let lang='zh', di=0;
+function D(){return DATA[lang]}
+function refresh(){
+ const x=D();
+ heroTitle.textContent=x.title; heroSub.textContent=x.subtitle;
+ nextLabel.textContent=x.next; resLabel.textContent=x.reservations; tripLabel.textContent=x.trip;
+ navToday.textContent=x.today; navTrip.textContent=x.trip; navMap.textContent=x.map; navSaved.textContent=x.saved; navMore.textContent=x.more;
+ render();
+}
+function render(){
+ const x=D(), d=x.days[di];
+ days.innerHTML=x.days.map((v,i)=>`<button class="pill ${i===di?'active':''}" onclick="di=${i};render()">${v[0]}</button>`).join('');
+ timeline.innerHTML=`<div class="dayhead"><b>${d[1]}</b></div>`+d[2].map((v,ei)=>`<div class="eventcard" onclick="openDetail(${di},${ei})"><div class="time">${v[0]}</div><div><b>${v[1]}</b><span class="chev">›</span><div class="note">${v[2]}</div></div></div>`).join('');
+}
+function toggleLang(){lang=lang==='zh'?'en':'zh';refresh()}
+function show(id,b){document.querySelectorAll('main>section').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on')}
+
+const DETAILS={
+"0-0":{icon:"✈️",type:"Arrival",rows:["Flight / arrival information","NGO Chubu Centrair International Airport","🚙 Alphard pickup after meeting younger brother"],map:"https://www.google.com/maps/search/?api=1&query=Chubu+Centrair+International+Airport"},
+"0-1":{icon:"✈️",type:"Flight",rows:["UO690 · HKG → NGO","10:50 departure · 15:50 arrival","Terminal 2 · meet family then rental-car pickup"],map:"https://www.google.com/maps/search/?api=1&query=Chubu+Centrair+International+Airport"},
+"0-2":{icon:"🏨",type:"Hotel",rows:["The Royal Park Hotel Iconic Nagoya","Check-in 17:30–18:30","Sakae · hotel base for 5 nights"],map:"https://www.google.com/maps/search/?api=1&query=The+Royal+Park+Hotel+Iconic+Nagoya"},
+"0-4":{icon:"🍽️",type:"Free dinner",rows:["No fixed reservation","Choose based on Quinn + everyone's energy","♡ Open Saved to see dinner candidates"],saved:true},
+"1-1":{icon:"🛍️",type:"Shopping",rows:["JR Nagoya Takashimaya","CHANEL Beauty · THREE · SHIRO · Hakuhodo · mimi33","Use this as a shopping checklist"],map:"https://www.google.com/maps/search/?api=1&query=JR+Nagoya+Takashimaya"},
+"2-3":{icon:"🛍️",type:"Meet-up",rows:["LaLaport Nagoya Minato AQULS","Meet family around 15:45–16:00","👶 Akachan Honpo · Quinn shopping"],map:"https://www.google.com/maps/search/?api=1&query=LaLaport+Nagoya+Minato+AQULS"},
+"4-0":{icon:"⛩️",type:"Sightseeing",rows:["Atsuta Jingu","Drive from hotel","Visit + photos"],map:"https://www.google.com/maps/search/?api=1&query=Atsuta+Jingu"},
+"5-1":{icon:"🛍️",type:"Shopping",rows:["AEON Mall Tokoname","Quick final shopping before Costco"],map:"https://www.google.com/maps/search/?api=1&query=AEON+Mall+Tokoname"}
+};
+function openDetail(day,event){
+ const v=D().days[day][2][event], det=DETAILS[day+"-"+event]||{};
+ let rows=(det.rows||[v[2],"Tap Map to open this stop in Google Maps."]).map(r=>`<div class="detailrow">${r}</div>`).join("");
+ let buttons=det.map?`<button class="action" onclick="window.open('${det.map}','_blank')">⌖ Google Maps</button>`:"";
+ if(det.saved) buttons+=`<button class="action alt" onclick="showSavedFromSheet()">♡ Saved restaurants</button>`;
+ sheetContent.innerHTML=`<div class="eyebrow">${det.type||"TRIP DETAIL"}</div><h3>${det.icon||"📍"} ${v[1]}</h3><div class="time">${v[0]}</div>${rows}${buttons}<button class="action alt" onclick="document.getElementById('sheetback').classList.remove('open')">Close</button>`;
+ sheetback.classList.add('open');
+}
+function closeSheet(e){sheetback.classList.remove('open')}
+function showSavedFromSheet(){sheetback.classList.remove('open');document.querySelectorAll('main>section').forEach(s=>s.classList.add('hidden'));saved.classList.remove('hidden');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));document.querySelectorAll('nav button')[3].classList.add('on')}
+let SAVED=[
+{name:"鳥開総本家",link:"https://www.google.com/maps/search/?api=1&query=Torikai+Sohonten+Nagoya",tag:"🍴 Food",day:"Day 2 candidate"},
+{name:"mimi33",link:"https://www.google.com/maps/search/?api=1&query=mimi33+Nagoya",tag:"🛍 Shopping",day:"Day 2"},
+{name:"Aeta",link:"https://www.google.com/maps/search/?api=1&query=Aeta+Nagoya",tag:"🛍 Shopping",day:"Not scheduled"},
+{name:"Chiikawa Land",link:"https://www.google.com/maps/search/?api=1&query=Chiikawa+Land+Nagoya+PARCO",tag:"🛍 Shopping",day:"Day 2"}
 ];
-let d=0;
-function render(){days.innerHTML=data.map((x,i)=>`<button class="pill ${i==d?'active':''}" onclick="d=${i};render()">${x[0]}</button>`).join('');
-timeline.innerHTML=data[d][1].map(x=>`<div class="card"><div class="row"><div class="time">${x[0]}</div><div class="event"><b>${x[1]}</b><div class="note">${x[2]}</div></div></div></div>`).join('')}
-render();
-function show(id,b){document.querySelectorAll('main>section').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on')}
-document.querySelectorAll('input[data-k]').forEach(x=>{x.checked=localStorage.getItem(x.dataset.k)=='1';x.onchange=()=>localStorage.setItem(x.dataset.k,x.checked?'1':'0')})
-function ask(){alert("Quick link未綁定：請將呢個Chat嘅分享/可開啟連結俾我，我會放入下一版。")}
+function renderSaved(){
+ savedList.innerHTML=SAVED.map((p,i)=>`<div class="savecard"><b>♡ ${p.name}</b><div class="tags"><span class="tag">${p.tag}</span><span class="tag">${p.day}</span></div><button class="smallbtn" onclick="window.open('${p.link}','_blank')">⌖ Maps</button> <button class="smallbtn" onclick="assignDay(${i})">＋ Add to itinerary</button></div>`).join('');
+}
+function addPlace(){
+ let link=placeLink.value.trim(); if(!link)return;
+ let name=prompt(lang==='zh'?'呢個地方叫咩名？':'Place name?','New saved place');
+ if(!name)return;
+ SAVED.unshift({name,link,tag:"📍 Saved",day:"Not scheduled"});placeLink.value='';renderSaved();
+}
+function assignDay(i){
+ let d=prompt(lang==='zh'?'加入邊一日？輸入 1–6':'Add to which day? Enter 1–6');
+ if(d && +d>=1 && +d<=6){SAVED[i].day="Day "+d;renderSaved()}
+}
+renderSaved();
+
+refresh();
 </script></body></html>
