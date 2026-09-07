@@ -92,6 +92,35 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 @media(min-width:900px){
   main{padding-top:28px}
 }
+
+.richInfoCard{border:1px solid var(--line);border-radius:20px;background:#fff;padding:18px;margin:10px 0 16px}
+.flightHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.airlineWrap{display:flex;align-items:center;gap:10px}.airlineLogo{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:900}
+.airlineLogo.cx{background:#0b7f7b;color:white}.airlineLogo.uo{background:#6c2b91;color:white}
+.statusPill{padding:8px 12px;border-radius:999px;background:#e9efe9;color:#5e7b66;font-weight:800;font-size:13px}
+.flightRoute{display:grid;grid-template-columns:1fr 34px 1fr;gap:8px;align-items:end}
+.flightCity{font-size:13px;color:var(--muted)}.flightTime{font-size:24px;font-weight:900;margin-top:3px}.flightTerminal{font-size:12px;color:var(--muted);margin-top:3px}
+.routeArrow{text-align:center;font-size:20px;color:#8a8a84;padding-bottom:18px}
+.infoRow{display:grid;grid-template-columns:44px 1fr 20px;gap:12px;align-items:center;padding:15px 0;border-bottom:1px solid var(--line)}
+.infoRow:last-child{border-bottom:0}.infoIcon{font-size:24px;color:var(--accent)}.infoRow b{display:block;margin-bottom:4px;font-size:16px}.rowArrow{font-size:22px;color:#96968f}
+.mapPreview{height:170px;border-radius:18px;margin:14px 0;background:
+linear-gradient(90deg,#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
+linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
+#eef1ed;position:relative;overflow:hidden;border:1px solid var(--line)}
+.mapPreview:after{content:attr(data-label);position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:white;border-radius:999px;padding:9px 13px;box-shadow:0 4px 14px #0002;font-weight:800;white-space:nowrap}
+.detailActions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}
+.detailBtn{border:0;border-radius:999px;padding:12px 16px;background:#222;color:#fff;font-weight:800;font-size:14px}
+.detailBtn.alt{background:#edf0ec;color:#222}
+.remarksBox{margin-top:18px;background:#f4e8eb;border-radius:20px;padding:16px 18px;color:#66404b}
+.remarksBox label{display:block;font-weight:800;color:var(--accent);margin-bottom:8px}
+.remarksBox textarea{width:100%;min-height:92px;border:1px solid #dfcdd2;border-radius:14px;padding:12px;font:inherit;font-size:14px;resize:vertical;background:#fff;color:var(--ink);outline:none}
+.remarksMeta{display:flex;justify-content:space-between;gap:12px;margin-top:6px;font-size:11px;color:var(--muted)}
+@media(max-width:520px){
+  .modal{width:94vw;height:84vh;padding:24px 20px 22px}
+  .modaltitle{font-size:26px}
+  .detailActions .detailBtn{flex:1 1 auto}
+}
+
 </style>
 </head>
 <body>
@@ -242,21 +271,152 @@ function jumpTrip(i){
   document.querySelectorAll('nav button')[1].classList.add('on');
   render();
 }
+function detailKey(day,event){
+  return `nagoyaDetailRemark_${day}_${event}`;
+}
+function esc(v){
+  return String(v||"")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;");
+}
+function saveDetailRemark(day,event,value){
+  localStorage.setItem(detailKey(day,event), value);
+  const saved=document.getElementById('remarkSaved');
+  if(saved){
+    saved.textContent = lang==='zh' ? '已儲存 ✓' : 'Saved ✓';
+    clearTimeout(window._remarkTimer);
+    window._remarkTimer=setTimeout(()=>{ if(saved) saved.textContent=''; },1200);
+  }
+  const count=document.getElementById('remarkCount');
+  if(count) count.textContent=`${value.length}/500`;
+}
+
 function openDetail(day,event){
   const v=D().days[day].events[event];
   const det=DETAILS[v.type]||{icon:"📍",kicker:"TRIP DETAIL",rows:[[v.title,v.sub]]};
-  let rows=(det.rows||[]).map(r=>`<div class="iconRow"><div class="iconBubble">•</div><div><b>${r[0]}</b><div class="note">${r[1]}</div></div><div class="arrow"></div></div>`).join('');
-  let buttons='';
-  if(det.map) buttons+=`<button class="action" onclick="window.open('${det.map}','_blank')">⌖ Open in Maps</button>`;
-  if(det.saved) buttons+=`<button class="action alt" onclick="showSavedFromModal()">♡ Saved places</button>`;
+  const dayLabel=D().days[day].label;
+  let body='', buttons='';
+
+  const row=(icon,title,sub,arrow=false)=>`
+    <div class="infoRow">
+      <div class="infoIcon">${icon}</div>
+      <div><b>${title}</b><div class="note">${sub}</div></div>
+      <div class="rowArrow">${arrow?'›':''}</div>
+    </div>`;
+
+  const mapBtn=det.map?`<button class="detailBtn" onclick="window.open('${det.map}','_blank')">⌖ Open in Maps</button>`:'';
+  const savedBtn=det.saved?`<button class="detailBtn alt" onclick="showSavedFromModal()">♡ Saved places</button>`:'';
+
+  // Rich flight cards
+  if(v.type==='flightCX536' || v.type==='flightCX539' || v.type==='arrivalCX'){
+    const isReturn = v.type==='flightCX539';
+    const flightNo = isReturn ? 'CX539' : 'CX536';
+    const dep = isReturn ? '16:10' : '10:10';
+    const arr = isReturn ? '19:30' : '15:05';
+    const leftCity = isReturn ? '名古屋 (NGO)' : '香港 (HKG)';
+    const rightCity = isReturn ? '香港 (HKG)' : '名古屋 (NGO)';
+    body = `
+      <div class="richInfoCard">
+        <div class="flightHeader">
+          <div class="airlineWrap">
+            <div class="airlineLogo cx">CX</div>
+            <div><b>Cathay Pacific</b><div class="note">${flightNo} · ${isReturn?'NGO → HKG':'HKG → NGO'}</div></div>
+          </div>
+          <div class="statusPill">已確認</div>
+        </div>
+        <div class="flightRoute">
+          <div><div class="flightCity">${leftCity}</div><div class="flightTime">${dep}</div><div class="flightTerminal">Terminal · check before travel</div></div>
+          <div class="routeArrow">→</div>
+          <div><div class="flightCity">${rightCity}</div><div class="flightTime">${arr}</div><div class="flightTerminal">Terminal · check before travel</div></div>
+        </div>
+      </div>
+      ${row('📍','中部國際機場 (NGO)','1-1 Centrair, Tokoname, Aichi 479-8701, Japan',true)}
+      ${row('👥','同行成員',isReturn?'Kitty＋Quinn＋爸媽':'Kitty＋Quinn＋爸媽',true)}
+      ${!isReturn ? row('🚙','接下來','Immigration → 取行李 → 等細佬 → 租車取車 → 前往名古屋',true) : row('🧳','接下來','Check-in → Security → Last-minute shopping → Boarding',true)}
+      <div class="mapPreview" data-label="Chubu Centrair International Airport"></div>
+    `;
+    buttons = mapBtn +
+      `<button class="detailBtn alt" onclick="alert('下一版可加入實際flight booking screenshot / terminal details。')">✈ View Flight</button>` +
+      (!isReturn?`<button class="detailBtn alt" onclick="alert('下一版可加入Toyota confirmation及取車櫃位。')">🚙 Car Details</button>`:'');
+  }
+  else if(v.type==='flightUO690' || v.type==='flightUO671'){
+    const is671=v.type==='flightUO671';
+    body=`
+      <div class="richInfoCard">
+        <div class="flightHeader">
+          <div class="airlineWrap"><div class="airlineLogo uo">UO</div><div><b>HK Express</b><div class="note">${is671?'UO671 · NGO → HKG':'UO690 · HKG → NGO'}</div></div></div>
+          <div class="statusPill">已確認</div>
+        </div>
+        <div class="flightRoute">
+          <div><div class="flightCity">${is671?'名古屋 (NGO)':'香港 (HKG)'}</div><div class="flightTime">${is671?'20:45':'10:50'}</div></div>
+          <div class="routeArrow">→</div>
+          <div><div class="flightCity">${is671?'香港 (HKG)':'名古屋 (NGO)'}</div><div class="flightTime">${is671?'00:00+1':'15:50'}</div></div>
+        </div>
+      </div>
+      ${row('📍','中部國際機場 (NGO)','1-1 Centrair, Tokoname, Aichi 479-8701, Japan',true)}
+      ${row('👥','乘客',is671?'哥哥＋細佬＋嫂嫂':'細佬',true)}
+      <div class="mapPreview" data-label="Chubu Centrair International Airport"></div>
+    `;
+    buttons = mapBtn + `<button class="detailBtn alt" onclick="alert('可加入HK Express booking screenshot / terminal details。')">✈ View Flight</button>`;
+  }
+  // Hotel / hotel meet-up
+  else if(v.type==='hotel' || v.type==='hotelMeet'){
+    const isMeet=v.type==='hotelMeet';
+    body=`
+      <div class="detailActions" style="margin-top:0">
+        ${mapBtn}
+        <button class="detailBtn alt" onclick="alert('可加入酒店電話。')">☎ Call</button>
+        <button class="detailBtn alt" onclick="window.open('https://www.royalparkhotels.co.jp/ic/nagoya/','_blank')">↗ Website</button>
+        <button class="detailBtn alt" onclick="alert('可加入酒店email。')">✉ Email</button>
+      </div>
+      ${row('📍','The Royal Park Hotel Iconic Nagoya','4-1-1 Sakae, Naka-ku, Nagoya · 中日ビル24F',true)}
+      <div class="mapPreview" data-label="The Royal Park Hotel Iconic Nagoya"></div>
+      ${isMeet
+        ? row('👥','集合安排','哥哥＋嫂嫂由東京乘新幹線到名古屋後自行前往酒店 · 約19:00',true)
+        : row('📅','住宿安排','Kitty＋爸媽＋Quinn：9/25–9/30 · 2 rooms + breakfast',true)+
+          row('📅','哥哥＋細佬＋嫂嫂','9/25–9/28 · 2 rooms · no breakfast',true)+
+          row('🚗','Parking','Hotel public parking ¥1,800/day · cannot reserve',true)
+      }
+    `;
+    buttons='';
+  }
+  // Car rental
+  else if(v.type==='car1' || v.type==='car2'){
+    body=`
+      <div class="richInfoCard">
+        ${row('🚙',v.type==='car1'?'Toyota Alphard Hybrid':'Car 2', v.type==='car1'?'W3 Class · Non-smoking':'Small car · Sep 27–28')}
+        ${v.type==='car1'?row('📄','Reservation #','99920176000'):''}
+        ${v.type==='car1'?row('🕒','Pickup / Return','9/25 15:30 pickup · 9/30 by 14:30 return'):row('📍','Pickup / Return','Sakae附近取車 → NGO還車')}
+        ${v.type==='car1'?row('🪪','Bring','Passport + valid driving licence usable in Japan'):''}
+      </div>
+      <div class="mapPreview" data-label="${v.type==='car1'?'Toyota Rent a Car · NGO':'Sakae car rental / NGO return'}"></div>
+    `;
+    buttons = mapBtn;
+  }
+  // Generic but still designed detail
+  else{
+    let rows=(det.rows||[]).map(r=>row('•',r[0],r[1])).join('');
+    body=`<div class="richInfoCard">${rows}</div>`;
+    if(det.map) body += `<div class="mapPreview" data-label="${esc(v.title)}"></div>`;
+    buttons = mapBtn + savedBtn;
+  }
+
+  const existing=localStorage.getItem(detailKey(day,event))||'';
   modalContent.innerHTML=`
     <div class="modalkicker">${det.kicker||'TRIP DETAIL'}</div>
     <div class="modaltitle">${det.icon||'📍'} ${v.title}</div>
-    <div class="modaldate">${D().days[day].label}</div>
+    <div class="modaldate">${dayLabel}</div>
     <div class="modaltime">${v.time}</div>
-    <div class="infoCard">${rows}</div>
-    ${buttons?`<div class="actions">${buttons}</div>`:''}
-    <div class="noteBox"><b>備註</b>${v.detail||v.sub}</div>`;
+    ${body}
+    ${buttons?`<div class="detailActions">${buttons}</div>`:''}
+    <div class="remarksBox">
+      <label>📝 備註 / Remarks</label>
+      <textarea maxlength="500" placeholder="${lang==='zh'?'Add your notes here…':'Add your notes here…'}"
+        oninput="saveDetailRemark(${day},${event},this.value)">${esc(existing)}</textarea>
+      <div class="remarksMeta"><span id="remarkSaved"></span><span id="remarkCount">${existing.length}/500</span></div>
+    </div>`;
   modalback.classList.add('open');
 }
 function closeModal(e){modalback.classList.remove('open')}
