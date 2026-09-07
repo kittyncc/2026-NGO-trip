@@ -47,19 +47,35 @@ nav button span{display:none}
 
 .modalback{position:fixed;inset:0;background:rgba(25,25,23,.46);z-index:30;display:none;align-items:center;justify-content:center;padding:26px 16px}
 .modalback.open{display:flex}
-.modal{width:min(94vw,640px);max-height:86vh;overflow:auto;background:#fcfbf8;border:1px solid #ebe7df;border-radius:26px;padding:24px;box-shadow:0 28px 80px rgba(0,0,0,.28);position:relative}
+.modal{width:min(92vw,650px);height:min(82vh,900px);overflow:auto;background:#fcfbf8;border:1px solid #ebe7df;border-radius:28px;padding:28px 28px 26px;box-shadow:0 30px 90px rgba(0,0,0,.30);position:relative}
 .modalclose{position:absolute;right:18px;top:18px;width:44px;height:44px;border:0;border-radius:50%;background:#efefeb;color:#555;font-size:29px;line-height:1}
-.modalkicker{font-size:12px;font-weight:900;letter-spacing:1.8px;color:#5d5a55;margin:4px 56px 8px 0}
-.modaltitle{font-size:29px;line-height:1.15;margin:6px 56px 4px 0}
+.modalkicker{font-size:12px;font-weight:900;letter-spacing:2px;color:#5d5a55;margin:4px 62px 10px 0}
+.modaltitle{font-size:31px;line-height:1.12;margin:6px 62px 6px 0;font-weight:800}
 .modaldate{font-size:15px;color:var(--muted);margin-bottom:2px}
-.modaltime{font-size:26px;color:var(--sage);font-weight:900;margin:6px 0 18px}
-.detailrow{padding:14px 0;border-bottom:1px solid var(--line)}
-.detailrow b{display:block;margin-bottom:4px}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
-.action{border:0;border-radius:999px;padding:11px 15px;background:#222;color:white;font-weight:800}
+.modaltime{font-size:28px;color:var(--sage);font-weight:900;margin:6px 0 20px}
+.detailrow{padding:15px 0;border-bottom:1px solid var(--line)}
+.detailrow b{display:block;margin-bottom:5px;font-size:16px}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px}
+.action{border:0;border-radius:999px;padding:12px 16px;background:#222;color:white;font-weight:800;font-size:14px}
 .action.alt{background:#edf0ec;color:#222}
-.noteBox{margin-top:18px;background:#f4e8eb;border-radius:18px;padding:15px;color:#66404b}
-.noteBox b{display:block;margin-bottom:4px;color:var(--accent)}
+.noteBox{margin-top:18px;background:#f4e8eb;border-radius:20px;padding:16px 18px;color:#66404b}
+.noteBox b{display:block;margin-bottom:5px;color:var(--accent)}
+.infoCard{border:1px solid var(--line);border-radius:20px;background:#fff;padding:18px;margin:10px 0 16px}
+.flightTop{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.airline{display:flex;align-items:center;gap:10px;font-weight:800}.airlineBadge{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#6c2b91;color:#fff;font-weight:900}
+.status{padding:8px 12px;border-radius:999px;background:#e9efe9;color:#5e7b66;font-weight:800;font-size:13px}
+.flightRoute{display:grid;grid-template-columns:1fr 34px 1fr;gap:8px;align-items:end}
+.flightCity{font-size:13px;color:var(--muted)}.flightTime{font-size:24px;font-weight:900;margin-top:3px}.flightTerminal{font-size:12px;color:var(--muted);margin-top:3px}
+.routeArrow{text-align:center;font-size:20px;color:#8a8a84;padding-bottom:18px}
+.iconRow{display:grid;grid-template-columns:44px 1fr 20px;gap:12px;align-items:center;padding:15px 0;border-bottom:1px solid var(--line)}
+.iconBubble{font-size:24px;color:var(--accent)}.iconRow b{display:block;margin-bottom:4px;font-size:16px}.arrow{font-size:22px;color:#96968f}
+.hotelMap{height:165px;border-radius:18px;margin:14px 0;background:
+linear-gradient(90deg,#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
+linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
+#eef1ed;position:relative;overflow:hidden;border:1px solid var(--line)}
+.hotelMap:after{content:'📍 The Royal Park Hotel Iconic Nagoya';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:white;border-radius:999px;padding:9px 13px;box-shadow:0 4px 14px #0002;font-weight:800;white-space:nowrap}
+.twoCol{display:grid;grid-template-columns:1fr 1fr;gap:12px}.miniInfo{padding:14px 0}.miniInfo b{display:block;margin-bottom:5px}
+@media(max-width:520px){.modal{width:94vw;height:84vh;padding:24px 20px 22px}.modaltitle{font-size:26px}.actions .action{flex:1 1 auto}.twoCol{gap:8px}}
 
 .savedtop{display:flex;gap:8px}
 .addbox{width:100%;border:1px solid var(--line);background:white;border-radius:14px;padding:13px;font-size:15px}
@@ -189,37 +205,87 @@ function jumpTrip(i){
 function openDetail(day,event){
   const v=D().days[day].events[event];
   const det=DETAILS[v.type]||DETAILS.free;
-  let rows=(det.rows||[]).map(r=>`<div class="detailrow"><b>${r[0]}</b><div class="note">${r[1]}</div></div>`).join('');
-  let buttons='';
-  let map=det.map;
-  if(v.type==='restaurant'){
-    if(v.title.includes('しげ')) map='https://www.google.com/maps/search/?api=1&query=炭火焼鳥しげ+栄本店';
-    else if(v.title.includes('馬喰')) map='https://www.google.com/maps/search/?api=1&query=馬喰一代+名古屋栄';
-    else if(v.title.includes('おか冨士')) map='https://www.google.com/maps/search/?api=1&query=鰻う+おか冨士';
+  const dayLabel=D().days[day].label;
+
+  function btn(label, action, alt=false){
+    return `<button class="action ${alt?'alt':''}" onclick="${action}">${label}</button>`;
   }
-  if(v.type==='shopping'){
-    if(v.title.includes('Takashimaya')) map='https://www.google.com/maps/search/?api=1&query=JR+Nagoya+Takashimaya';
-    else if(v.title.includes('LaLaport')) map='https://www.google.com/maps/search/?api=1&query=LaLaport+Nagoya+Minato+AQULS';
-    else if(v.title.includes('Jazz Dream')) map='https://www.google.com/maps/search/?api=1&query=Mitsui+Outlet+Park+Jazz+Dream+Nagashima';
-    else if(v.title.includes('AEON')) map='https://www.google.com/maps/search/?api=1&query=AEON+Mall+Tokoname';
-    else if(v.title.includes('Costco')) map='https://www.google.com/maps/search/?api=1&query=Costco+Chubu+Airport';
+  function row(icon,title,sub,arrow=true){
+    return `<div class="iconRow"><div class="iconBubble">${icon}</div><div><b>${title}</b><div class="note">${sub}</div></div>${arrow?'<div class="arrow">›</div>':''}</div>`;
   }
-  if(v.type==='sight'){
-    if(v.title.includes('熱田')) map='https://www.google.com/maps/search/?api=1&query=Atsuta+Jingu';
-    else if(v.title.includes('大須')) map='https://www.google.com/maps/search/?api=1&query=Osu+Kannon+Nagoya';
-    else if(v.title.includes('四間道')) map='https://www.google.com/maps/search/?api=1&query=Shikemichi+Nagoya';
+
+  let body='', buttons='', kicker=det.kicker||'TRIP DETAIL', icon=det.icon||'📍';
+
+  if(v.type==='arrival'){
+    body = `
+      <div class="infoCard">
+        <div class="flightTop">
+          <div class="airline"><div class="airlineBadge">HK</div><div><div>HK Express</div><div class="note">Arrival connection</div></div></div>
+          <div class="status">準時</div>
+        </div>
+        <div class="flightRoute">
+          <div><div class="flightCity">香港 (HKG)</div><div class="flightTime">10:50</div><div class="flightTerminal">Terminal 2</div></div>
+          <div class="routeArrow">→</div>
+          <div><div class="flightCity">名古屋 (NGO)</div><div class="flightTime">15:50</div><div class="flightTerminal">Terminal 2</div></div>
+        </div>
+      </div>
+      ${row('👥','同行成員','你＋爸媽＋Quinn')}
+      ${row('🚙','租車','Alphard 8人車 · 等埋細佬後於 NGO 取車')}
+      ${row('📍','NGO 中部國際機場','1-1 Centrair, Tokoname, Aichi 479-8701, Japan')}
+    `;
+    buttons = btn('⌖ Open in Maps',`window.open('https://www.google.com/maps/search/?api=1&query=Chubu+Centrair+International+Airport','_blank')`) +
+              btn('🚙 Car Details',`alert('下一版可加入租車公司、confirmation no.、取車櫃位及電話。')`,true) +
+              btn('↗ View Flight',`alert('下一版可加入 flight confirmation / terminal details。')`,true);
+  } else if(v.type==='hotel'){
+    body = `
+      <div class="actions" style="margin-top:0;margin-bottom:8px">
+        ${btn('⌖ Open in Maps',`window.open('https://www.google.com/maps/search/?api=1&query=The+Royal+Park+Hotel+Iconic+Nagoya','_blank')`)}
+        ${btn('☎ Call',`alert('可加入酒店電話。')`,true)}
+        ${btn('↗ Website',`window.open('https://www.royalparkhotels.co.jp/ic/nagoya/','_blank')`,true)}
+        ${btn('✉ Email',`alert('可加入酒店 email。')`,true)}
+      </div>
+      ${row('📍','地址','The Royal Park Hotel Iconic Nagoya · Sakae, Nagoya')}
+      <div class="hotelMap"></div>
+      <div class="twoCol">
+        <div class="miniInfo"><b>📅 Check-in</b><div class="note">9/25 · 17:30–18:30</div></div>
+        <div class="miniInfo"><b>📅 Check-out</b><div class="note">9/30 · 09:00</div></div>
+      </div>
+      ${row('📄','Reservation','可加入 confirmation number / room details')}
+      ${row('🚗','Parking','可加入酒店泊車位置、收費及出入口')}
+    `;
+    buttons='';
+  } else {
+    let rows=(det.rows||[]).map(r=>row('•',r[0],r[1],false)).join('');
+    let map=det.map;
+    if(v.type==='restaurant'){
+      if(v.title.includes('しげ')) map='https://www.google.com/maps/search/?api=1&query=炭火焼鳥しげ+栄本店';
+      else if(v.title.includes('馬喰')) map='https://www.google.com/maps/search/?api=1&query=馬喰一代+名古屋栄';
+      else if(v.title.includes('おか冨士')) map='https://www.google.com/maps/search/?api=1&query=鰻う+おか冨士';
+    }
+    if(v.type==='shopping'){
+      if(v.title.includes('Takashimaya')) map='https://www.google.com/maps/search/?api=1&query=JR+Nagoya+Takashimaya';
+      else if(v.title.includes('LaLaport')) map='https://www.google.com/maps/search/?api=1&query=LaLaport+Nagoya+Minato+AQULS';
+      else if(v.title.includes('Jazz Dream')) map='https://www.google.com/maps/search/?api=1&query=Mitsui+Outlet+Park+Jazz+Dream+Nagashima';
+      else if(v.title.includes('AEON')) map='https://www.google.com/maps/search/?api=1&query=AEON+Mall+Tokoname';
+      else if(v.title.includes('Costco')) map='https://www.google.com/maps/search/?api=1&query=Costco+Chubu+Airport';
+    }
+    if(v.type==='sight'){
+      if(v.title.includes('熱田')) map='https://www.google.com/maps/search/?api=1&query=Atsuta+Jingu';
+      else if(v.title.includes('大須')) map='https://www.google.com/maps/search/?api=1&query=Osu+Kannon+Nagoya';
+      else if(v.title.includes('四間道')) map='https://www.google.com/maps/search/?api=1&query=Shikemichi+Nagoya';
+    }
+    body = `<div class="infoCard">${rows}</div>`;
+    if(map) buttons += btn('⌖ Open in Maps',`window.open('${map}','_blank')`);
+    if(det.saved) buttons += btn('♡ Saved places',`showSavedFromModal()`,true);
   }
-  if(map) buttons+=`<button class="action" onclick="window.open('${map}','_blank')">⌖ Open in Maps</button>`;
-  if(det.saved) buttons+=`<button class="action alt" onclick="showSavedFromModal()">♡ Saved places</button>`;
-  if(v.type==='hotel') buttons+=`<button class="action alt" onclick="alert('Hotel contact / reservation details can be added here.')">🏨 Hotel details</button>`;
-  if(v.type==='flight') buttons+=`<button class="action alt" onclick="alert('Flight confirmation / terminal details can be added here.')">✈️ View flight</button>`;
+
   modalContent.innerHTML=`
-    <div class="modalkicker">${det.kicker||'TRIP DETAIL'}</div>
-    <div class="modaltitle">${det.icon||'📍'} ${v.title}</div>
-    <div class="modaldate">${D().days[day].label}</div>
+    <div class="modalkicker">${kicker}</div>
+    <div class="modaltitle">${icon} ${v.title}</div>
+    <div class="modaldate">${dayLabel}</div>
     <div class="modaltime">${v.time}</div>
-    ${rows}
-    <div class="actions">${buttons}</div>
+    ${body}
+    ${buttons?`<div class="actions">${buttons}</div>`:''}
     <div class="noteBox"><b>備註</b>${v.detail||v.sub}</div>`;
   modalback.classList.add('open');
 }
