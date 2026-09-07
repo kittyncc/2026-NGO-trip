@@ -121,6 +121,23 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
   .detailActions .detailBtn{flex:1 1 auto}
 }
 
+
+.editbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+.editbtn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:9px 12px;font-weight:800;font-size:13px}
+.editbtn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.editbtn.danger{color:#9a4557}
+.eventActions{display:flex;gap:6px;align-items:center}
+.iconBtn{width:34px;height:34px;border:1px solid var(--line);background:#fff;border-radius:50%;display:grid;place-items:center;font-size:15px;color:#666}
+.formGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.formGroup{margin:11px 0}.formGroup.full{grid-column:1/-1}
+.formGroup label{display:block;font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px}
+.formGroup input,.formGroup textarea,.formGroup select{width:100%;border:1px solid var(--line);background:#fff;border-radius:13px;padding:11px 12px;font:inherit;color:var(--ink);font-size:16px}
+.formGroup textarea{min-height:92px;resize:vertical}
+.managePanel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;margin:10px 0}
+.managePanel h3{margin:0 0 10px;font-size:16px}
+.minirow{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.minirow:first-of-type{border-top:0}
+@media(max-width:520px){.formGrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -204,6 +221,8 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 <div class="card"><b>9/30 · by 14:30</b><div class="note">🚙 Toyota Alphard Return</div></div>
 <div class="card"><b>9/30 · 16:10</b><div class="note">✈️ CX539 NGO → HKG</div></div>
 <div class="card"><b>🧳 Packing</b><div class="note">Passports · driving licence · Quinn items · stroller · carrier · chargers</div></div>
+<div class="card"><b>⚙️ App Data</b><div class="note">你喺App入面對行程同details嘅修改會保存在呢部device/browser。</div>
+<div class="editbar"><button class="editbtn danger" type="button" onclick="if(confirm('Reset all itinerary edits to master version?')){localStorage.removeItem('nagoyaItineraryData');location.reload()}">Reset itinerary to master</button></div></div>
 </section>
 
 </main>
@@ -217,6 +236,15 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
   </div>
 </div>
 
+
+<div id="editBack" class="modalback" onclick="closeEditModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modalclose" type="button" onclick="editBack.classList.remove('open')">×</button>
+    <div class="modalkicker" id="editKicker">EDIT</div>
+    <div class="modaltitle" id="editTitle">Edit itinerary</div>
+    <form id="editForm"></form>
+  </div>
+</div>
 <nav>
 <button class="on" aria-label="Today" onclick="show('today',this)">
 <svg class="homefill" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/></svg><span id="navToday"></span></button>
@@ -231,7 +259,8 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 </nav>
 
 <script>
-const DATA={"zh": {"title": "名古屋之旅", "subtitle": "2026年9月25–30日 · 6日5夜", "today": "今日", "trip": "行程", "map": "地圖", "saved": "收藏", "more": "更多", "next": "下一個重點", "reservations": "已預約", "days": [{"label": "Day 1 · 9/25 Fri", "title": "✈️ 抵達名古屋・全家集合", "events": [{"time": "10:10", "title": "CX536 HKG → NGO", "sub": "Kitty＋Quinn＋爸媽", "type": "flightCX536", "detail": "Cathay Pacific CX536 · 10:10 HKG 出發 · 15:05 抵達 NGO。"}, {"time": "15:05", "title": "抵達 NGO", "sub": "Kitty＋Quinn＋爸媽", "type": "arrivalCX", "detail": "落機、Immigration、取行李；唔使趕，等埋細佬。"}, {"time": "15:30", "title": "Toyota Alphard Pick-up", "sub": "Chubu Centrair International Airport Shop", "type": "car1", "detail": "Toyota Rent a Car · W3 Class Toyota Alphard Hybrid · Non-smoking · Reservation #99920176000。"}, {"time": "15:50", "title": "UO690 抵達", "sub": "細佬到 NGO", "type": "flightUO690", "detail": "HK Express UO690 · 10:50 HKG 出發 · 15:50 抵達 NGO。"}, {"time": "16:30–17:00", "title": "全員離開 NGO", "sub": "🚙 NGO → Sakae · 約50–60分鐘", "type": "driveNGO", "detail": "等埋細佬後一齊離開機場，前往榮。"}, {"time": "17:30–18:30", "title": "Hotel Check-in", "sub": "The Royal Park Hotel Iconic Nagoya", "type": "hotel", "detail": "你＋爸媽＋Quinn住至9/30，兩間Superior Wide Twin＋早餐；哥哥＋細佬＋嫂嫂住至9/28，另外兩間房、不包早餐。Hotel public parking ¥1,800/day，不能預約。"}, {"time": "約19:00", "title": "♡ 酒店集合", "sub": "哥哥＋嫂嫂由東京乘新幹線到名古屋", "type": "hotelMeet", "detail": "哥哥＋嫂嫂由東京到名古屋後自行前往酒店集合。"}, {"time": "晚上", "title": "Free Dinner + Sakae散步", "sub": "睇大家精神／Quinn狀態", "type": "freeDinner", "detail": "第一晚唔book死餐廳；附近搵嘢食或早啲休息都OK。"}]}, {"label": "Day 2 · 9/26 Sat", "title": "☕ 四間道・高島屋・名古屋駅・榮・焼鳥", "events": [{"time": "08:30", "title": "Hotel 出發", "sub": "🚙 前往四間道／円頓寺", "type": "driveShike", "detail": "由酒店出發去四間道／円頓寺。"}, {"time": "09:00", "title": "Komeda Coffee / 小倉紅豆多士", "sub": "之後四間道＋円頓寺散步", "type": "komeda", "detail": "Nagoya morning：Komeda Coffee 小倉紅豆多士，之後輕鬆行四間道及円頓寺。"}, {"time": "10:00–10:30", "title": "前往名古屋駅", "sub": "🚙 Parking → Nagoya Station", "type": "nagoyaStation", "detail": "由四間道前往名古屋駅，泊車後開始shopping。"}, {"time": "10:30–12:30", "title": "JR Nagoya Takashimaya", "sub": "CHANEL · THREE · SHIRO · Hakuhodo · mimi33", "type": "takashimaya", "detail": "Beauty shopping；mimi33位於Takashimaya Gate Tower Mall 3F。可以split行動。"}, {"time": "12:30–13:30", "title": "Lunch @ Nagoya Station", "sub": "TBD｜親子丼／和風Pasta候選", "type": "lunchTBD", "detail": "候選：とり五鐵／鳥開総本家／こなな。かわせ星期六冇Lunch；アナタと博多17:00先開。"}, {"time": "13:30–14:00", "title": "返回 Sakae", "sub": "🚙 名古屋駅 → 榮", "type": "driveSakae", "detail": "返回榮。"}, {"time": "14:00–16:30", "title": "Free Time / Quinn Nap", "sub": "PARCO · Risa Magli · Chiikawa · Alpen NAGOYA · LACHIC · Hotel", "type": "sakaeFree", "detail": "完全睇Quinn nap同大家體力，可以分頭活動。"}, {"time": "17:30", "title": "Hotel 集合／整理", "sub": "Dinner前休息", "type": "hotelMeet", "detail": "返酒店整理，準備晚餐。"}, {"time": "18:00", "title": "炭火焼鳥しげ 栄本店", "sub": "【RESERVED】", "type": "shige", "detail": "已確認晚餐預約。"}]}, {"label": "Day 3 · 9/27 Sun", "title": "🥎 Softball × Family Free Day × LaLaport Meet-up", "events": [{"time": "朝早", "title": "Car 2 取車", "sub": "Sakae附近取細車", "type": "car2", "detail": "今日開始用兩架車；Car 1係Alphard＋Quinn car seat，Car 2係細車。"}, {"time": "11:30", "title": "Kitty 出發去安城", "sub": "🚗 Car 2", "type": "driveAnjo", "detail": "Kitty自己駕車去安城市総合運動公園ソフトボール場。"}, {"time": "13:15", "title": "Hong Kong 🇭🇰 vs Singapore 🇸🇬", "sub": "安城市総合運動公園ソフトボール場", "type": "softball", "detail": "比賽完大概15:00左右離開，但唔set死。"}, {"time": "Morning", "title": "Family FREE", "sub": "水族館／名古屋港／Garden Pier／Sea Train Land／Brunch", "type": "familyFree", "detail": "爸媽＋哥哥＋細佬＋嫂嫂＋Quinn 唔需要預先決定去邊。"}, {"time": "15:45–16:00", "title": "♡ LaLaport Meet Up", "sub": "Akachan Honpo 幫 Quinn 買BB用品", "type": "lalaport", "detail": "全家於LaLaport Nagoya Minato AQULS集合。"}, {"time": "17:00", "title": "返回 Sakae", "sub": "兩架車一齊返酒店", "type": "driveSakae", "detail": "放低戰利品＋休息。"}, {"time": "18:30", "title": "飛騨牛一頭家 馬喰一代 名古屋栄", "sub": "【RESERVED】Private Room", "type": "bakuro", "detail": "已確認晚餐預約，Private Room。"}]}, {"label": "Day 4 · 9/28 Mon", "title": "🛍️ Jazz Dream Nagashima Outlet", "events": [{"time": "09:15", "title": "Sakae 出發", "sub": "🚙 Car 1 + 🚗 Car 2", "type": "driveJazz", "detail": "兩架車一齊前往Jazz Dream Nagashima。"}, {"time": "10:00", "title": "Mitsui Outlet Park Jazz Dream Nagashima", "sub": "Shopping · Lunch · Coffee · Quinn nap", "type": "jazz", "detail": "今日唔加其他景點，大家自由分組。"}, {"time": "16:30–17:00", "title": "哥哥＋細佬＋嫂嫂離隊", "sub": "🚗 Car 2 → NGO · 入油＋還車", "type": "depart3", "detail": "三人由Outlet自行駕Car 2去NGO。"}, {"time": "20:45", "title": "UO671 NGO → HKG", "sub": "00:00+1 抵達香港", "type": "flightUO671", "detail": "哥哥＋細佬＋嫂嫂返港。"}, {"time": "晚上", "title": "♡ 3 Adults + Quinn 四人行", "sub": "想繼續Outlet就繼續／攰就返Sakae", "type": "freeDinner", "detail": "Kitty＋爸媽＋Quinn；晚餐自由。"}]}, {"label": "Day 5 · 9/29 Tue", "title": "⛩️ 熱田神宮・鰻魚・大須", "events": [{"time": "09:00", "title": "Hotel 出發", "sub": "🚙 → Atsuta Jingu", "type": "driveAtsuta", "detail": "由酒店駕車前往熱田神宮。"}, {"time": "09:30–10:40", "title": "熱田神宮", "sub": "參拜＋散步＋影相", "type": "atsuta", "detail": "慢慢行，不趕。"}, {"time": "10:45", "title": "前往 Lunch", "sub": "🚙 → Okafuji", "type": "driveOkafuji", "detail": "由熱田神宮前往鰻魚午餐。"}, {"time": "11:30", "title": "鰻う おか冨士 Okafuji", "sub": "【RESERVED】3 Adults + Quinn", "type": "okafuji", "detail": "已確認午餐預約。"}, {"time": "12:30–13:30", "title": "Quinn Nap Buffer", "sub": "Car nap / stroller nap", "type": "nap", "detail": "呢段唔排活動，唔需要為咗趕大須叫醒Quinn。"}, {"time": "約13:30", "title": "大須観音＋大須商店街", "sub": "食べ歩き＋小店shopping", "type": "osu", "detail": "Aeta有時間先睇，唔係must。"}, {"time": "約15:00", "title": "Konparu Osu Honten", "sub": "小倉多士＋Ebi Fry Sandwich（optional）", "type": "konparu", "detail": "名古屋Coffee break。"}, {"time": "16:00–16:30", "title": "返回 Hotel", "sub": "休息＋Pack少少行李", "type": "driveSakae", "detail": "晚餐自由。"}]}, {"label": "Day 6 · 9/30 Wed", "title": "🛍️ Tokoname・Costco・✈️ HKG", "events": [{"time": "09:00", "title": "Check-out", "sub": "全部行李上 Car 1", "type": "hotel", "detail": "酒店正式check-out deadline係11:00，但我哋早走。"}, {"time": "10:00–10:45", "title": "AEON Mall Tokoname", "sub": "最後快速shopping", "type": "aeon", "detail": "唔好行到失控 😂"}, {"time": "約11:00", "title": "Costco Chubu Airport", "sub": "Shopping + Food Court Lunch", "type": "costco", "detail": "Toyota正式booking係14:30還車，所以午餐唔使太趕。"}, {"time": "13:00–13:15", "title": "離開 Costco", "sub": "⛽ 入油 → Toyota Rent a Car", "type": "driveToyota", "detail": "離開Costco後先入油，再去還車。"}, {"time": "13:45–14:00", "title": "Return Car 1", "sub": "Toyota Rent a Car · 最遲14:30", "type": "car1", "detail": "Toyota Alphard Hybrid Return。"}, {"time": "14:00 onward", "title": "NGO Terminal", "sub": "Check-in · Security · Last-minute shopping · Quinn snack", "type": "arrivalCX", "detail": "還車後入Terminal。"}, {"time": "16:10", "title": "CX539 NGO → HKG", "sub": "19:30 抵達香港", "type": "flightCX539", "detail": "Kitty＋Quinn＋爸媽返香港。"}]}]}};
+const DEFAULT_DATA={"zh": {"title": "名古屋之旅", "subtitle": "2026年9月25–30日 · 6日5夜", "today": "今日", "trip": "行程", "map": "地圖", "saved": "收藏", "more": "更多", "next": "下一個重點", "reservations": "已預約", "days": [{"label": "Day 1 · 9/25 Fri", "title": "✈️ 抵達名古屋・全家集合", "events": [{"time": "10:10", "title": "CX536 HKG → NGO", "sub": "Kitty＋Quinn＋爸媽", "type": "flightCX536", "detail": "Cathay Pacific CX536 · 10:10 HKG 出發 · 15:05 抵達 NGO。"}, {"time": "15:05", "title": "抵達 NGO", "sub": "Kitty＋Quinn＋爸媽", "type": "arrivalCX", "detail": "落機、Immigration、取行李；唔使趕，等埋細佬。"}, {"time": "15:30", "title": "Toyota Alphard Pick-up", "sub": "Chubu Centrair International Airport Shop", "type": "car1", "detail": "Toyota Rent a Car · W3 Class Toyota Alphard Hybrid · Non-smoking · Reservation #99920176000。"}, {"time": "15:50", "title": "UO690 抵達", "sub": "細佬到 NGO", "type": "flightUO690", "detail": "HK Express UO690 · 10:50 HKG 出發 · 15:50 抵達 NGO。"}, {"time": "16:30–17:00", "title": "全員離開 NGO", "sub": "🚙 NGO → Sakae · 約50–60分鐘", "type": "driveNGO", "detail": "等埋細佬後一齊離開機場，前往榮。"}, {"time": "17:30–18:30", "title": "Hotel Check-in", "sub": "The Royal Park Hotel Iconic Nagoya", "type": "hotel", "detail": "你＋爸媽＋Quinn住至9/30，兩間Superior Wide Twin＋早餐；哥哥＋細佬＋嫂嫂住至9/28，另外兩間房、不包早餐。Hotel public parking ¥1,800/day，不能預約。"}, {"time": "約19:00", "title": "♡ 酒店集合", "sub": "哥哥＋嫂嫂由東京乘新幹線到名古屋", "type": "hotelMeet", "detail": "哥哥＋嫂嫂由東京到名古屋後自行前往酒店集合。"}, {"time": "晚上", "title": "Free Dinner + Sakae散步", "sub": "睇大家精神／Quinn狀態", "type": "freeDinner", "detail": "第一晚唔book死餐廳；附近搵嘢食或早啲休息都OK。"}]}, {"label": "Day 2 · 9/26 Sat", "title": "☕ 四間道・高島屋・名古屋駅・榮・焼鳥", "events": [{"time": "08:30", "title": "Hotel 出發", "sub": "🚙 前往四間道／円頓寺", "type": "driveShike", "detail": "由酒店出發去四間道／円頓寺。"}, {"time": "09:00", "title": "Komeda Coffee / 小倉紅豆多士", "sub": "之後四間道＋円頓寺散步", "type": "komeda", "detail": "Nagoya morning：Komeda Coffee 小倉紅豆多士，之後輕鬆行四間道及円頓寺。"}, {"time": "10:00–10:30", "title": "前往名古屋駅", "sub": "🚙 Parking → Nagoya Station", "type": "nagoyaStation", "detail": "由四間道前往名古屋駅，泊車後開始shopping。"}, {"time": "10:30–12:30", "title": "JR Nagoya Takashimaya", "sub": "CHANEL · THREE · SHIRO · Hakuhodo · mimi33", "type": "takashimaya", "detail": "Beauty shopping；mimi33位於Takashimaya Gate Tower Mall 3F。可以split行動。"}, {"time": "12:30–13:30", "title": "Lunch @ Nagoya Station", "sub": "TBD｜親子丼／和風Pasta候選", "type": "lunchTBD", "detail": "候選：とり五鐵／鳥開総本家／こなな。かわせ星期六冇Lunch；アナタと博多17:00先開。"}, {"time": "13:30–14:00", "title": "返回 Sakae", "sub": "🚙 名古屋駅 → 榮", "type": "driveSakae", "detail": "返回榮。"}, {"time": "14:00–16:30", "title": "Free Time / Quinn Nap", "sub": "PARCO · Risa Magli · Chiikawa · Alpen NAGOYA · LACHIC · Hotel", "type": "sakaeFree", "detail": "完全睇Quinn nap同大家體力，可以分頭活動。"}, {"time": "17:30", "title": "Hotel 集合／整理", "sub": "Dinner前休息", "type": "hotelMeet", "detail": "返酒店整理，準備晚餐。"}, {"time": "18:00", "title": "炭火焼鳥しげ 栄本店", "sub": "【RESERVED】", "type": "shige", "detail": "已確認晚餐預約。"}]}, {"label": "Day 3 · 9/27 Sun", "title": "🥎 Softball × Family Free Day × LaLaport Meet-up", "events": [{"time": "朝早", "title": "Car 2 取車", "sub": "Sakae附近取細車", "type": "car2", "detail": "今日開始用兩架車；Car 1係Alphard＋Quinn car seat，Car 2係細車。"}, {"time": "11:30", "title": "Kitty 出發去安城", "sub": "🚗 Car 2", "type": "driveAnjo", "detail": "Kitty自己駕車去安城市総合運動公園ソフトボール場。"}, {"time": "13:15", "title": "Hong Kong 🇭🇰 vs Singapore 🇸🇬", "sub": "安城市総合運動公園ソフトボール場", "type": "softball", "detail": "比賽完大概15:00左右離開，但唔set死。"}, {"time": "Morning", "title": "Family FREE", "sub": "水族館／名古屋港／Garden Pier／Sea Train Land／Brunch", "type": "familyFree", "detail": "爸媽＋哥哥＋細佬＋嫂嫂＋Quinn 唔需要預先決定去邊。"}, {"time": "15:45–16:00", "title": "♡ LaLaport Meet Up", "sub": "Akachan Honpo 幫 Quinn 買BB用品", "type": "lalaport", "detail": "全家於LaLaport Nagoya Minato AQULS集合。"}, {"time": "17:00", "title": "返回 Sakae", "sub": "兩架車一齊返酒店", "type": "driveSakae", "detail": "放低戰利品＋休息。"}, {"time": "18:30", "title": "飛騨牛一頭家 馬喰一代 名古屋栄", "sub": "【RESERVED】Private Room", "type": "bakuro", "detail": "已確認晚餐預約，Private Room。"}]}, {"label": "Day 4 · 9/28 Mon", "title": "🛍️ Jazz Dream Nagashima Outlet", "events": [{"time": "09:15", "title": "Sakae 出發", "sub": "🚙 Car 1 + 🚗 Car 2", "type": "driveJazz", "detail": "兩架車一齊前往Jazz Dream Nagashima。"}, {"time": "10:00", "title": "Mitsui Outlet Park Jazz Dream Nagashima", "sub": "Shopping · Lunch · Coffee · Quinn nap", "type": "jazz", "detail": "今日唔加其他景點，大家自由分組。"}, {"time": "16:30–17:00", "title": "哥哥＋細佬＋嫂嫂離隊", "sub": "🚗 Car 2 → NGO · 入油＋還車", "type": "depart3", "detail": "三人由Outlet自行駕Car 2去NGO。"}, {"time": "20:45", "title": "UO671 NGO → HKG", "sub": "00:00+1 抵達香港", "type": "flightUO671", "detail": "哥哥＋細佬＋嫂嫂返港。"}, {"time": "晚上", "title": "♡ 3 Adults + Quinn 四人行", "sub": "想繼續Outlet就繼續／攰就返Sakae", "type": "freeDinner", "detail": "Kitty＋爸媽＋Quinn；晚餐自由。"}]}, {"label": "Day 5 · 9/29 Tue", "title": "⛩️ 熱田神宮・鰻魚・大須", "events": [{"time": "09:00", "title": "Hotel 出發", "sub": "🚙 → Atsuta Jingu", "type": "driveAtsuta", "detail": "由酒店駕車前往熱田神宮。"}, {"time": "09:30–10:40", "title": "熱田神宮", "sub": "參拜＋散步＋影相", "type": "atsuta", "detail": "慢慢行，不趕。"}, {"time": "10:45", "title": "前往 Lunch", "sub": "🚙 → Okafuji", "type": "driveOkafuji", "detail": "由熱田神宮前往鰻魚午餐。"}, {"time": "11:30", "title": "鰻う おか冨士 Okafuji", "sub": "【RESERVED】3 Adults + Quinn", "type": "okafuji", "detail": "已確認午餐預約。"}, {"time": "12:30–13:30", "title": "Quinn Nap Buffer", "sub": "Car nap / stroller nap", "type": "nap", "detail": "呢段唔排活動，唔需要為咗趕大須叫醒Quinn。"}, {"time": "約13:30", "title": "大須観音＋大須商店街", "sub": "食べ歩き＋小店shopping", "type": "osu", "detail": "Aeta有時間先睇，唔係must。"}, {"time": "約15:00", "title": "Konparu Osu Honten", "sub": "小倉多士＋Ebi Fry Sandwich（optional）", "type": "konparu", "detail": "名古屋Coffee break。"}, {"time": "16:00–16:30", "title": "返回 Hotel", "sub": "休息＋Pack少少行李", "type": "driveSakae", "detail": "晚餐自由。"}]}, {"label": "Day 6 · 9/30 Wed", "title": "🛍️ Tokoname・Costco・✈️ HKG", "events": [{"time": "09:00", "title": "Check-out", "sub": "全部行李上 Car 1", "type": "hotel", "detail": "酒店正式check-out deadline係11:00，但我哋早走。"}, {"time": "10:00–10:45", "title": "AEON Mall Tokoname", "sub": "最後快速shopping", "type": "aeon", "detail": "唔好行到失控 😂"}, {"time": "約11:00", "title": "Costco Chubu Airport", "sub": "Shopping + Food Court Lunch", "type": "costco", "detail": "Toyota正式booking係14:30還車，所以午餐唔使太趕。"}, {"time": "13:00–13:15", "title": "離開 Costco", "sub": "⛽ 入油 → Toyota Rent a Car", "type": "driveToyota", "detail": "離開Costco後先入油，再去還車。"}, {"time": "13:45–14:00", "title": "Return Car 1", "sub": "Toyota Rent a Car · 最遲14:30", "type": "car1", "detail": "Toyota Alphard Hybrid Return。"}, {"time": "14:00 onward", "title": "NGO Terminal", "sub": "Check-in · Security · Last-minute shopping · Quinn snack", "type": "arrivalCX", "detail": "還車後入Terminal。"}, {"time": "16:10", "title": "CX539 NGO → HKG", "sub": "19:30 抵達香港", "type": "flightCX539", "detail": "Kitty＋Quinn＋爸媽返香港。"}]}]}};
+let DATA=JSON.parse(localStorage.getItem('nagoyaItineraryData')||'null')||JSON.parse(JSON.stringify(DEFAULT_DATA));
 const DETAILS={"flightCX536": {"icon": "✈️", "kicker": "FLIGHT", "map": "https://www.google.com/maps/search/?api=1&query=Hong+Kong+International+Airport", "rows": [["Cathay Pacific", "CX536"], ["Route", "HKG → NGO"], ["Time", "10:10 → 15:05"]]}, "arrivalCX": {"icon": "✈️", "kicker": "ARRIVAL", "map": "https://www.google.com/maps/search/?api=1&query=Chubu+Centrair+International+Airport", "rows": [["Airport", "Chubu Centrair International Airport"], ["Arrival", "NGO"], ["Plan", "Immigration → luggage → meet younger brother"]]}, "car1": {"icon": "🚙", "kicker": "CAR RENTAL", "map": "https://www.google.com/maps/search/?api=1&query=Toyota+Rent+a+Car+Chubu+Centrair+International+Airport+Shop", "rows": [["Toyota Rent a Car", "Chubu Centrair International Airport Shop"], ["Vehicle", "W3 Class Toyota Alphard Hybrid · Non-smoking"], ["Booking", "9/25 15:30 → 9/30 by 14:30"], ["Reservation", "99920176000"], ["Bring", "Passport + valid driving licence usable in Japan"]]}, "flightUO690": {"icon": "✈️", "kicker": "FLIGHT", "map": "https://www.google.com/maps/search/?api=1&query=Chubu+Centrair+International+Airport", "rows": [["HK Express", "UO690"], ["Route", "HKG → NGO"], ["Time", "10:50 → 15:50"]]}, "driveNGO": {"icon": "🚙", "kicker": "DRIVE", "map": "https://www.google.com/maps/dir/?api=1&origin=Chubu+Centrair+International+Airport&destination=The+Royal+Park+Hotel+Iconic+Nagoya", "rows": [["Route", "NGO → Sakae"], ["Drive time", "約50–60分鐘"]]}, "hotel": {"icon": "🏨", "kicker": "HOTEL", "map": "https://www.google.com/maps/search/?api=1&query=The+Royal+Park+Hotel+Iconic+Nagoya", "rows": [["Hotel", "The Royal Park Hotel Iconic Nagoya"], ["Address", "4-1-1 Sakae, Naka-ku, Nagoya · 中日ビル24F"], ["Rooms 9/25–30", "2 × Superior Wide Twin + breakfast"], ["Rooms 9/25–28", "2 rooms · no breakfast"], ["Parking", "Public parking ¥1,800/day · no reservation"]]}, "hotelMeet": {"icon": "♡", "kicker": "HOTEL MEET UP", "map": "https://www.google.com/maps/search/?api=1&query=The+Royal+Park+Hotel+Iconic+Nagoya", "rows": [["Meet point", "The Royal Park Hotel Iconic Nagoya"], ["Time", "約19:00"], ["Note", "哥哥＋嫂嫂由東京乘新幹線到名古屋後自行前往酒店"]]}, "freeDinner": {"icon": "🍴", "kicker": "FREE DINNER", "map": "https://www.google.com/maps/search/?api=1&query=restaurants+near+The+Royal+Park+Hotel+Iconic+Nagoya", "saved": true, "rows": [["No fixed reservation", "按Quinn狀態及大家精神決定"], ["Area", "Sakae / hotel附近"]]}, "driveShike": {"icon": "🚙", "kicker": "DRIVE", "map": "https://www.google.com/maps/dir/?api=1&origin=The+Royal+Park+Hotel+Iconic+Nagoya&destination=Shikemichi+Nagoya", "rows": [["Route", "Hotel → 四間道／円頓寺"]]}, "komeda": {"icon": "☕", "kicker": "BREAKFAST + WALK", "map": "https://www.google.com/maps/search/?api=1&query=コメダ珈琲店+円頓寺店", "rows": [["Breakfast", "Komeda Coffee 円頓寺店"], ["Address", "〒451-0042 愛知県名古屋市西区那古野1-13-8"], ["Nearby", "四間道＋円頓寺商店街"]]}, "nagoyaStation": {"icon": "🚙", "kicker": "DRIVE", "map": "https://www.google.com/maps/search/?api=1&query=Nagoya+Station", "rows": [["Destination", "Nagoya Station"], ["Plan", "Parking → shopping"]]}, "takashimaya": {"icon": "🛍️", "kicker": "SHOPPING", "map": "https://www.google.com/maps/search/?api=1&query=JR+Nagoya+Takashimaya", "rows": [["JR Nagoya Takashimaya", "CHANEL · THREE · SHIRO · Hakuhodo"], ["mimi33", "Takashimaya Gate Tower Mall 3F"]]}, "lunchTBD": {"icon": "🍳", "kicker": "LUNCH TBD", "map": "https://www.google.com/maps/search/?api=1&query=Nagoya+Station+restaurants", "saved": true, "rows": [["Candidate", "とり五鐵"], ["Candidate", "鳥開総本家"], ["Candidate", "こなな"]]}, "driveSakae": {"icon": "🚙", "kicker": "DRIVE", "map": "https://www.google.com/maps/search/?api=1&query=Sakae+Nagoya", "rows": [["Destination", "Sakae / Hotel"]]}, "sakaeFree": {"icon": "🌿", "kicker": "FREE TIME", "map": "https://www.google.com/maps/search/?api=1&query=Nagoya+PARCO", "saved": true, "rows": [["Options", "Chiikawa Land @ PARCO · Risa Magli @ PARCO · Alpen NAGOYA · LACHIC · Coffee · Hotel rest"]]}, "shige": {"icon": "🍢", "kicker": "RESERVATION", "map": "https://www.google.com/maps/search/?api=1&query=炭火焼鳥しげ+栄本店", "rows": [["Restaurant", "炭火焼鳥しげ 栄本店"], ["Time", "9/26 · 18:00"], ["Status", "Reserved"]]}, "car2": {"icon": "🚗", "kicker": "CAR 2", "map": "https://www.google.com/maps/search/?api=1&query=Sakae+Nagoya+car+rental", "rows": [["Rental", "Small car"], ["Period", "9/27–9/28"], ["Pickup", "Sakae附近"], ["Return", "NGO Airport"]]}, "driveAnjo": {"icon": "🚗", "kicker": "DRIVE", "map": "https://www.google.com/maps/dir/?api=1&origin=Sakae+Nagoya&destination=安城市総合運動公園ソフトボール場", "rows": [["Route", "Sakae → Anjo Sports Park"], ["Driver", "Kitty"]]}, "softball": {"icon": "🥎", "kicker": "SOFTBALL", "map": "https://www.google.com/maps/search/?api=1&query=安城市総合運動公園ソフトボール場", "rows": [["Match", "Hong Kong vs Singapore"], ["Start", "13:15"], ["Venue", "安城市総合運動公園ソフトボール場"]]}, "familyFree": {"icon": "🌤️", "kicker": "FAMILY FREE", "map": "https://www.google.com/maps/search/?api=1&query=Nagoya+Port", "saved": true, "rows": [["Option A", "名古屋港水族館"], ["Option B", "Garden Pier / Sea Train Land"], ["Option C", "Brunch → LaLaport"]]}, "lalaport": {"icon": "🛍️", "kicker": "MEET UP", "map": "https://www.google.com/maps/search/?api=1&query=LaLaport+Nagoya+Minato+AQULS", "rows": [["Meet", "15:45–16:00"], ["Main stop", "Akachan Honpo"], ["Purpose", "Quinn BB shopping"]]}, "bakuro": {"icon": "🥩", "kicker": "RESERVATION", "map": "https://www.google.com/maps/search/?api=1&query=飛騨牛一頭家+馬喰一代+名古屋栄", "rows": [["Restaurant", "飛騨牛一頭家 馬喰一代 名古屋栄"], ["Time", "9/27 · 18:30"], ["Room", "Private Room"], ["Status", "Reserved"]]}, "driveJazz": {"icon": "🚙", "kicker": "DRIVE", "map": "https://www.google.com/maps/dir/?api=1&origin=Sakae+Nagoya&destination=Mitsui+Outlet+Park+Jazz+Dream+Nagashima", "rows": [["Route", "Sakae → Jazz Dream Nagashima"]]}, "jazz": {"icon": "🛍️", "kicker": "OUTLET", "map": "https://www.google.com/maps/search/?api=1&query=Mitsui+Outlet+Park+Jazz+Dream+Nagashima", "rows": [["Place", "Mitsui Outlet Park Jazz Dream Nagashima"], ["Plan", "Shopping · Lunch · Coffee · Quinn nap"]]}, "depart3": {"icon": "✈️", "kicker": "DEPARTURE", "map": "https://www.google.com/maps/dir/?api=1&origin=Mitsui+Outlet+Park+Jazz+Dream+Nagashima&destination=Chubu+Centrair+International+Airport", "rows": [["Group", "哥哥＋細佬＋嫂嫂"], ["Route", "Jazz Dream → NGO"], ["Car", "Car 2 · refuel + return"]]}, "flightUO671": {"icon": "✈️", "kicker": "FLIGHT", "map": "https://www.google.com/maps/search/?api=1&query=Chubu+Centrair+International+Airport", "rows": [["HK Express", "UO671"], ["Route", "NGO → HKG"], ["Time", "20:45 → 00:00+1"]]}, "driveAtsuta": {"icon": "🚙", "kicker": "DRIVE", "map": "https://www.google.com/maps/dir/?api=1&origin=The+Royal+Park+Hotel+Iconic+Nagoya&destination=Atsuta+Jingu", "rows": [["Route", "Hotel → Atsuta Jingu"]]}, "atsuta": {"icon": "⛩️", "kicker": "SIGHTSEEING", "map": "https://www.google.com/maps/search/?api=1&query=Atsuta+Jingu", "rows": [["Place", "Atsuta Jingu"], ["Plan", "參拜＋散步＋影相"]]}, "driveOkafuji": {"icon": "🚙", "kicker": "DRIVE", "map": "https://www.google.com/maps/dir/?api=1&origin=Atsuta+Jingu&destination=鰻う+おか冨士", "rows": [["Route", "Atsuta Jingu → Okafuji"]]}, "okafuji": {"icon": "🍱", "kicker": "RESERVATION", "map": "https://www.google.com/maps/search/?api=1&query=鰻う+おか冨士", "rows": [["Restaurant", "鰻う おか冨士"], ["Time", "9/29 · 11:30"], ["Party", "3 Adults + Quinn"], ["Status", "Reserved"]]}, "nap": {"icon": "😴", "kicker": "QUINN NAP", "rows": [["Buffer", "12:30–13:30"], ["Option", "Car nap / stroller nap"]]}, "osu": {"icon": "⛩️", "kicker": "SIGHTSEEING", "map": "https://www.google.com/maps/search/?api=1&query=Osu+Kannon+Nagoya", "rows": [["Place", "大須観音"], ["Area", "大須商店街"], ["Optional", "Aeta if time"]]}, "konparu": {"icon": "☕", "kicker": "CAFE", "map": "https://www.google.com/maps/search/?api=1&query=Konparu+Osu+Honten", "rows": [["Cafe", "Konparu Osu Honten"], ["Try", "小倉多士"], ["Optional", "Ebi Fry Sandwich"]]}, "aeon": {"icon": "🛍️", "kicker": "SHOPPING", "map": "https://www.google.com/maps/search/?api=1&query=AEON+Mall+Tokoname", "rows": [["Place", "AEON Mall Tokoname"], ["Plan", "最後快速shopping"]]}, "costco": {"icon": "🛒", "kicker": "SHOPPING + LUNCH", "map": "https://www.google.com/maps/search/?api=1&query=Costco+Chubu+Airport", "rows": [["Place", "Costco Chubu Airport"], ["Plan", "Shopping + Food Court Lunch"]]}, "driveToyota": {"icon": "🚙", "kicker": "DRIVE", "map": "https://www.google.com/maps/dir/?api=1&origin=Costco+Chubu+Airport&destination=Toyota+Rent+a+Car+Chubu+Centrair+International+Airport+Shop", "rows": [["Route", "Costco → refuel → Toyota Rent a Car"]]}, "flightCX539": {"icon": "✈️", "kicker": "FLIGHT", "map": "https://www.google.com/maps/search/?api=1&query=Chubu+Centrair+International+Airport", "rows": [["Cathay Pacific", "CX539"], ["Route", "NGO → HKG"], ["Time", "16:10 → 19:30"]]}};
 let lang='zh', di=0;
 
@@ -250,7 +279,10 @@ function render(){
     d.events.map((v,ei)=>`<div class="eventcard" onclick="openDetail(${di},${ei})">
       <div class="time">${v.time}</div>
       <div><b>${v.title}</b><div class="note">${v.sub}</div></div>
-      <div class="chev">›</div>
+      <div class="eventActions" onclick="event.stopPropagation()">
+        <button class="iconBtn" type="button" aria-label="Edit" onclick="openEditEvent(${di},${ei})">✎</button>
+        <button class="iconBtn" type="button" aria-label="Delete" onclick="deleteEvent(${di},${ei})">−</button>
+      </div>
     </div>`).join('');
 }
 function toggleLang(){
@@ -295,7 +327,10 @@ function saveDetailRemark(day,event,value){
 
 function openDetail(day,event){
   const v=D().days[day].events[event];
-  const det=DETAILS[v.type]||{icon:"📍",kicker:"TRIP DETAIL",rows:[[v.title,v.sub]]};
+  const baseDet=DETAILS[v.type]||{icon:"📍",kicker:"TRIP DETAIL",rows:[[v.title,v.sub]]};
+  const det={...baseDet};
+  if(Array.isArray(v.customRows)) det.rows=v.customRows.map(r=>[r.label,r.value]);
+  if(v.customMap) det.map=v.customMap;
   const dayLabel=D().days[day].label;
   let body='', buttons='';
 
@@ -411,6 +446,9 @@ function openDetail(day,event){
     <div class="modaltime">${v.time}</div>
     ${body}
     ${buttons?`<div class="detailActions">${buttons}</div>`:''}
+    <div class="detailActions">
+      <button class="detailBtn alt" type="button" onclick="modalback.classList.remove('open');openEditDetails(${day},${event})">✎ Edit details</button>
+    </div>
     <div class="remarksBox">
       <label>📝 備註 / Remarks</label>
       <textarea maxlength="500" placeholder="${lang==='zh'?'Add your notes here…':'Add your notes here…'}"
@@ -483,6 +521,157 @@ function assignDay(i){
   if(d && +d>=1 && +d<=6){SAVED[i].day="Day "+d;persistSaved();renderSaved()}
 }
 function removeSaved(i){SAVED.splice(i,1);persistSaved();renderSaved()}
+
+
+function persistItinerary(){
+  localStorage.setItem('nagoyaItineraryData', JSON.stringify(DATA));
+}
+function inputVal(id){ return document.getElementById(id)?.value?.trim() || ''; }
+
+function closeEditModal(e){ editBack.classList.remove('open'); }
+
+function openAddEvent(){
+  editKicker.textContent='ADD ITINERARY';
+  editTitle.textContent=`${D().days[di].label}`;
+  editForm.innerHTML=`
+    <div class="formGrid">
+      <div class="formGroup"><label>時間 / Time</label><input id="fTime" placeholder="e.g. 15:30"></div>
+      <div class="formGroup"><label>類型 / Type</label>
+        <select id="fType">
+          <option value="free">General</option><option value="driveSakae">Drive</option>
+          <option value="restaurant">Restaurant</option><option value="shopping">Shopping</option>
+          <option value="sight">Sightseeing</option><option value="hotel">Hotel</option>
+          <option value="flightCX536">Flight</option><option value="nap">Nap</option>
+        </select>
+      </div>
+      <div class="formGroup full"><label>標題 / Title</label><input id="fTitle"></div>
+      <div class="formGroup full"><label>簡短描述 / Subtitle</label><input id="fSub"></div>
+      <div class="formGroup full"><label>Details</label><textarea id="fDetail"></textarea></div>
+    </div>
+    <div class="editbar">
+      <button class="editbtn primary" type="submit">Save</button>
+      <button class="editbtn" type="button" onclick="editBack.classList.remove('open')">Cancel</button>
+    </div>`;
+  editForm.onsubmit=(e)=>{
+    e.preventDefault();
+    const title=inputVal('fTitle');
+    if(!title){ alert('請輸入標題 / Please enter a title'); return; }
+    DATA.zh.days[di].events.push({
+      time:inputVal('fTime')||'TBD',
+      title,
+      sub:inputVal('fSub'),
+      type:document.getElementById('fType').value,
+      detail:inputVal('fDetail')
+    });
+    persistItinerary(); render(); editBack.classList.remove('open');
+  };
+  editBack.classList.add('open');
+}
+
+function openEditEvent(day,event){
+  const v=DATA.zh.days[day].events[event];
+  editKicker.textContent='EDIT ITINERARY';
+  editTitle.textContent=v.title;
+  editForm.innerHTML=`
+    <div class="formGrid">
+      <div class="formGroup"><label>時間 / Time</label><input id="fTime" value="${esc(v.time)}"></div>
+      <div class="formGroup"><label>類型 / Type</label><input id="fType" value="${esc(v.type)}"></div>
+      <div class="formGroup full"><label>標題 / Title</label><input id="fTitle" value="${esc(v.title)}"></div>
+      <div class="formGroup full"><label>簡短描述 / Subtitle</label><input id="fSub" value="${esc(v.sub)}"></div>
+      <div class="formGroup full"><label>Details</label><textarea id="fDetail">${esc(v.detail)}</textarea></div>
+    </div>
+    <div class="editbar">
+      <button class="editbtn primary" type="submit">Save changes</button>
+      <button class="editbtn danger" type="button" onclick="deleteEvent(${day},${event});editBack.classList.remove('open')">Delete</button>
+    </div>`;
+  editForm.onsubmit=(e)=>{
+    e.preventDefault();
+    Object.assign(v,{
+      time:inputVal('fTime')||'TBD',
+      title:inputVal('fTitle')||v.title,
+      sub:inputVal('fSub'),
+      type:inputVal('fType')||'free',
+      detail:inputVal('fDetail')
+    });
+    persistItinerary(); render(); editBack.classList.remove('open');
+  };
+  editBack.classList.add('open');
+}
+
+function deleteEvent(day,event){
+  const v=DATA.zh.days[day].events[event];
+  if(!confirm(`Delete "${v.title}"?`)) return;
+  DATA.zh.days[day].events.splice(event,1);
+  persistItinerary(); render();
+}
+
+function openManageDay(){
+  const d=DATA.zh.days[di];
+  editKicker.textContent='EDIT DAY';
+  editTitle.textContent=d.label;
+  editForm.innerHTML=`
+    <div class="formGroup"><label>Day tab label</label><input id="dayLabel" value="${esc(d.label)}"></div>
+    <div class="formGroup"><label>Day heading</label><input id="dayTitle" value="${esc(d.title)}"></div>
+    <div class="editbar">
+      <button class="editbtn primary" type="submit">Save</button>
+      <button class="editbtn" type="button" onclick="editBack.classList.remove('open')">Cancel</button>
+    </div>`;
+  editForm.onsubmit=(e)=>{
+    e.preventDefault();
+    d.label=inputVal('dayLabel')||d.label;
+    d.title=inputVal('dayTitle')||d.title;
+    persistItinerary(); render(); editBack.classList.remove('open');
+  };
+  editBack.classList.add('open');
+}
+
+function openEditDetails(day,event){
+  const v=DATA.zh.days[day].events[event];
+  const det=DETAILS[v.type]||{rows:[]};
+  const customRows=Array.isArray(v.customRows)?v.customRows:(det.rows||[]).map(r=>({label:r[0],value:r[1]}));
+  editKicker.textContent='EDIT DETAILS';
+  editTitle.textContent=v.title;
+  editForm.innerHTML=`
+    <div class="formGroup"><label>Google Maps link</label><input id="detailMap" value="${esc(v.customMap||det.map||'')}"></div>
+    <div class="formGroup"><label>Detail rows</label><div id="rowEditor"></div></div>
+    <button class="editbtn" type="button" onclick="addDetailRow()">＋ Add detail row</button>
+    <div class="editbar">
+      <button class="editbtn primary" type="submit">Save details</button>
+      <button class="editbtn danger" type="button" onclick="resetCustomDetails(${day},${event})">Reset details</button>
+    </div>`;
+  window._editRows=customRows;
+  renderDetailRows();
+  editForm.onsubmit=(e)=>{
+    e.preventDefault();
+    v.customMap=inputVal('detailMap');
+    v.customRows=window._editRows.map((r,i)=>({
+      label:document.getElementById(`rowL${i}`).value.trim(),
+      value:document.getElementById(`rowV${i}`).value.trim()
+    })).filter(r=>r.label||r.value);
+    persistItinerary(); editBack.classList.remove('open');
+  };
+  editBack.classList.add('open');
+}
+function renderDetailRows(){
+  rowEditor.innerHTML=(window._editRows||[]).map((r,i)=>`
+    <div class="managePanel">
+      <div class="formGroup"><label>Label</label><input id="rowL${i}" value="${esc(r.label)}"></div>
+      <div class="formGroup"><label>Value</label><textarea id="rowV${i}">${esc(r.value)}</textarea></div>
+      <button class="editbtn danger" type="button" onclick="removeDetailRow(${i})">Remove row</button>
+    </div>`).join('');
+}
+function addDetailRow(){
+  window._editRows.push({label:'',value:''}); renderDetailRows();
+}
+function removeDetailRow(i){
+  window._editRows.splice(i,1); renderDetailRows();
+}
+function resetCustomDetails(day,event){
+  if(!confirm('Reset custom details for this itinerary item?')) return;
+  const v=DATA.zh.days[day].events[event];
+  delete v.customRows; delete v.customMap;
+  persistItinerary(); editBack.classList.remove('open');
+}
 
 renderSaved();refresh();
 </script>
