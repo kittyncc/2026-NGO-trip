@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>V34 — Corrected Car 2 Airport Return + Full Reservation Options</title>
+<title>V35 — Restore Add/Delete Itinerary in Edit Mode</title>
 <style>
 :root{
   --bg:#f7f6f2;--ink:#252525;--muted:#7b7b76;--accent:#8f4d61;--sage:#6f8374;
@@ -460,7 +460,10 @@ function render(){
             onchange="updateTripQuickField(${di},${ei},'title',this.value)">
           <div class="note" style="margin-top:5px">${esc(v.sub)}</div>
         </div>
-        <div></div>
+        <div class="eventActions" onclick="event.stopPropagation()">
+          <button class="iconBtn" type="button" aria-label="Delete itinerary" title="Delete itinerary"
+            onclick="deleteEvent(${di},${ei})">−</button>
+        </div>
       </div>`;
     }
 
@@ -472,8 +475,9 @@ function render(){
   }).join('');
 
   timeline.innerHTML=`<div class="dayhead"><b>${esc(d.title)}</b></div>`+
-    (tripEditMode?`<div class="editModeHint">Edit mode 只用嚟調整次序、時間同行程 title。拖動 ≡ 排序；修改時間／title 後會自動儲存。</div>`:'')+
-    rows;
+    (tripEditMode?`<div class="editModeHint">Edit mode：拖動 ≡ 調整次序；可直接改時間同行程 title；− 刪除行程。修改後會自動儲存。</div>`:'')+
+    rows+
+    (tripEditMode?`<button class="addItineraryBtn" type="button" onclick="openAddEvent()">＋ Add itinerary</button>`:'');
 
   const toggle=document.getElementById('tripEditToggle');
   const auto=document.getElementById('autoSortBtn');
