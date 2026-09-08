@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>Nagoya Trip 2026 · Editable Day Titles + Itinerary Drag Sort</title>
+<title>V30 — Editable Event Header Title + Itinerary Drag Sort</title>
 <style>
 :root{
   --bg:#f7f6f2;--ink:#252525;--muted:#7b7b76;--accent:#8f4d61;--sage:#6f8374;
@@ -249,6 +249,14 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
   background:#fff;color:var(--ink);display:inline-flex;align-items:center;justify-content:center;
   padding:0;font-size:13px;cursor:pointer;flex:0 0 auto
 }
+
+.editableModalTitle{
+  width:calc(100% - 62px);border:0;border-bottom:1px solid transparent;
+  background:transparent;padding:0 0 5px;margin:0 0 14px;
+  font:inherit;font-size:inherit;font-weight:inherit;line-height:inherit;color:inherit;
+  outline:none;border-radius:0
+}
+.editableModalTitle:focus{border-bottom-color:var(--accent)}
 </style>
 </head>
 <body>
@@ -1156,12 +1164,12 @@ function openAddEvent(){
 function openEditEvent(day,event){
   const v=DATA.zh.days[day].events[event];
   editKicker.textContent='EDIT ITINERARY';
-  editTitle.textContent=v.title;
+  editTitle.innerHTML=`<input id="fTitleTop" class="editableModalTitle" aria-label="Itinerary title" value="${esc(v.title)}">`;
   editForm.innerHTML=`
     <div class="formGrid">
       <div class="formGroup"><label>時間 / Time</label><input id="fTime" value="${esc(v.time)}"></div>
       <div class="formGroup"><label>類型 / Type</label><input id="fType" value="${esc(v.type)}"></div>
-      <div class="formGroup full"><label>標題 / Title</label><input id="fTitle" value="${esc(v.title)}"></div>
+      
       <div class="formGroup full"><label>簡短描述 / Subtitle</label><input id="fSub" value="${esc(v.sub)}"></div>
       <div class="formGroup full"><label>Details</label><textarea id="fDetail">${esc(v.detail)}</textarea></div>
       <div class="formGroup full">
@@ -1187,7 +1195,7 @@ function openEditEvent(day,event){
     e.preventDefault();
     Object.assign(v,{
       time:inputVal('fTime')||'TBD',
-      title:inputVal('fTitle')||v.title,
+      title:inputVal('fTitleTop')||v.title,
       sub:inputVal('fSub'),
       type:inputVal('fType')||'free',
       detail:inputVal('fDetail')
