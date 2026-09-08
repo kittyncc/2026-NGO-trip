@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>V31 — Unified Itinerary + Details Editor</title>
+<title>V32 — Simplified Edit Mode + Unified Detail Editing</title>
 <style>
 :root{
   --bg:#f7f6f2;--ink:#252525;--muted:#7b7b76;--accent:#8f4d61;--sage:#6f8374;
@@ -265,6 +265,18 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
   font-size:11px;font-weight:900;letter-spacing:.5px;color:var(--muted);
   text-transform:uppercase;margin-bottom:10px
 }
+
+.quickEditTime,.quickEditTitle{
+  width:100%;border:1px solid var(--line);background:#fff;border-radius:10px;
+  padding:7px 8px;font:inherit;color:var(--ink);outline:none
+}
+.quickEditTime{font-size:10px;font-weight:800;text-align:center}
+.quickEditTitle{font-size:11px;font-weight:800}
+.quickEditTime:focus,.quickEditTitle:focus{border-color:var(--accent)}
+.detailDescription{
+  margin:12px 0;padding:13px 14px;border:1px solid var(--line);
+  border-radius:14px;background:#fbfbf8;font-size:11px;line-height:1.55
+}
 </style>
 </head>
 <body>
@@ -425,26 +437,56 @@ function refresh(){
 function render(){
   const x=DATA.zh, d=x.days[di];
   days.innerHTML=x.days.map((v,i)=>`<button class="pill ${i===di?'active':''}" onclick="di=${i};render()">${v.label}</button>`).join('');
-  const rows=d.events.map((v,ei)=>`<div class="eventcard ${tripEditMode?'tripEditing':''}" draggable="${tripEditMode?'true':'false'}"
-      data-event-index="${ei}"
-      ${tripEditMode?`ondragstart="tripDragStart(event,${ei})" ondragover="tripDragOver(event,${ei})" ondrop="tripDrop(event,${ei})" ondragend="tripDragEnd(event)"`:''}
-      onclick="${tripEditMode?'':'openDetail('+di+','+ei+')'}">
-      <div class="dragHandle" title="Drag to reorder">≡</div>
+
+  const rows=d.events.map((v,ei)=>{
+    if(tripEditMode){
+      return `<div class="eventcard tripEditing"
+        data-event-index="${ei}"
+        ondragover="tripDragOver(event,${ei})"
+        ondrop="tripDrop(event,${ei})">
+        <div class="dragHandle" draggable="true" title="Drag to reorder"
+          ondragstart="tripDragStart(event,${ei})"
+          ondragend="tripDragEnd(event)">≡</div>
+        <div>
+          <input class="quickEditTime" value="${esc(v.time)}"
+            aria-label="Edit time"
+            onclick="event.stopPropagation()"
+            onchange="updateTripQuickField(${di},${ei},'time',this.value)">
+        </div>
+        <div>
+          <input class="quickEditTitle" value="${esc(v.title)}"
+            aria-label="Edit itinerary title"
+            onclick="event.stopPropagation()"
+            onchange="updateTripQuickField(${di},${ei},'title',this.value)">
+          <div class="note" style="margin-top:5px">${esc(v.sub)}</div>
+        </div>
+        <div></div>
+      </div>`;
+    }
+
+    return `<div class="eventcard" onclick="openDetail(${di},${ei})">
       <div class="time">${esc(v.time)}</div>
       <div><b>${esc(v.title)}</b><div class="note">${esc(v.sub)}</div></div>
-      ${tripEditMode?`<div class="eventActions" onclick="event.stopPropagation()">
-        <button class="iconBtn" type="button" aria-label="Edit" onclick="openEditEvent(${di},${ei})">✎</button>
-        <button class="iconBtn" type="button" aria-label="Delete" onclick="deleteEvent(${di},${ei})">−</button>
-      </div>`:'<div class="chev">›</div>'}
-    </div>`).join('');
-  timeline.innerHTML=`<div class="dayhead ${tripEditMode?'dayheadEditable':''}"><b>${esc(d.title)}</b>${tripEditMode?`<button class="dayheadEditBtn" type="button" aria-label="Edit day title" title="Edit day title" onclick="openManageDay()">✎</button>`:''}</div>`+
-    (tripEditMode?`<div class="editModeHint">拖動 ≡ 可調整同一日行程次序；撳日標題旁 ✎ 可以改 Day tab 同當日 title；Auto sort 會按時間／Morning／晚上等重新排序。</div>`:'')+
-    rows+
-    (tripEditMode?`<button class="addItineraryBtn" type="button" onclick="openAddEvent()">＋ Add itinerary</button>`:'');
+      <div class="chev">›</div>
+    </div>`;
+  }).join('');
+
+  timeline.innerHTML=`<div class="dayhead"><b>${esc(d.title)}</b></div>`+
+    (tripEditMode?`<div class="editModeHint">Edit mode 只用嚟調整次序、時間同行程 title。拖動 ≡ 排序；修改時間／title 後會自動儲存。</div>`:'')+
+    rows;
+
   const toggle=document.getElementById('tripEditToggle');
   const auto=document.getElementById('autoSortBtn');
   if(toggle) toggle.textContent=tripEditMode?'✓ Done':'✎ Edit';
   if(auto) auto.classList.toggle('hidden',!tripEditMode);
+}
+
+function updateTripQuickField(day,event,field,value){
+  const v=DATA.zh.days[day].events[event];
+  if(!v)return;
+  if(field==='time') v.time=String(value||'').trim()||'TBD';
+  if(field==='title') v.title=String(value||'').trim()||v.title;
+  persistItinerary();
 }
 
 
@@ -823,141 +865,65 @@ function closePhotoViewer(){
   if(img)img.removeAttribute('src');
 }
 
+function resolvedDetailRows(v){
+  const det=DETAILS[v.type]||{rows:[]};
+  return Array.isArray(v.customRows)
+    ? v.customRows.map(r=>({label:r.label||'',value:r.value||''}))
+    : (det.rows||[]).map(r=>({label:r[0]||'',value:r[1]||''}));
+}
+
+function resolvedDetailMap(v){
+  const det=DETAILS[v.type]||{};
+  return v.customMap||det.map||'';
+}
+
 function openDetail(day,event){
   const v=DATA.zh.days[day].events[event];
-  const baseDet=DETAILS[v.type]||{icon:"📍",kicker:"TRIP DETAIL",rows:[[v.title,v.sub]]};
-  const det={...baseDet};
-  if(Array.isArray(v.customRows)) det.rows=v.customRows.map(r=>[r.label,r.value]);
-  if(v.customMap) det.map=v.customMap;
+  const det=DETAILS[v.type]||{icon:"📍",kicker:"TRIP DETAIL",rows:[]};
   const dayLabel=DATA.zh.days[day].label;
-  let body='', buttons='';
-
-  const row=(icon,title,sub,arrow=false)=>`
-    <div class="infoRow">
-      <div class="infoIcon">${icon}</div>
-      <div><b>${title}</b><div class="note">${sub}</div></div>
-      <div class="rowArrow">${arrow?'›':''}</div>
-    </div>`;
-
-  const mapBtn=det.map?`<button class="detailBtn" onclick="window.open('${det.map}','_blank')">⌖ Open in Maps</button>`:'';
-  const savedBtn=det.saved?`<button class="detailBtn alt" onclick="showSavedFromModal()">♡ Saved places</button>`:'';
-
-  // Rich flight cards
-  if(v.type==='flightCX536' || v.type==='flightCX539' || v.type==='arrivalCX'){
-    const isReturn = v.type==='flightCX539';
-    const flightNo = isReturn ? 'CX539' : 'CX536';
-    const dep = isReturn ? '16:10' : '10:10';
-    const arr = isReturn ? '19:30' : '15:05';
-    const leftCity = isReturn ? '名古屋 (NGO)' : '香港 (HKG)';
-    const rightCity = isReturn ? '香港 (HKG)' : '名古屋 (NGO)';
-    body = `
-      <div class="richInfoCard">
-        <div class="flightHeader">
-          <div class="airlineWrap">
-            <div class="airlineLogo cx">CX</div>
-            <div><b>Cathay Pacific</b><div class="note">${flightNo} · ${isReturn?'NGO → HKG':'HKG → NGO'}</div></div>
-          </div>
-          <div class="statusPill">已確認</div>
-        </div>
-        <div class="flightRoute">
-          <div><div class="flightCity">${leftCity}</div><div class="flightTime">${dep}</div><div class="flightTerminal">Terminal · check before travel</div></div>
-          <div class="routeArrow">→</div>
-          <div><div class="flightCity">${rightCity}</div><div class="flightTime">${arr}</div><div class="flightTerminal">Terminal · check before travel</div></div>
-        </div>
-      </div>
-      ${row('📍','中部國際機場 (NGO)','1-1 Centrair, Tokoname, Aichi 479-8701, Japan',true)}
-      ${row('👥','同行成員',isReturn?'Kitty＋Quinn＋爸媽':'Kitty＋Quinn＋爸媽',true)}
-      ${!isReturn ? row('🚙','接下來','Immigration → 取行李 → 等細佬 → 租車取車 → 前往名古屋',true) : row('🧳','接下來','Check-in → Security → Last-minute shopping → Boarding',true)}
-      <div class="mapPreview" data-label="Chubu Centrair International Airport"></div>
-    `;
-    buttons = mapBtn +
-      `<button class="detailBtn alt" onclick="alert('下一版可加入實際flight booking screenshot / terminal details。')">✈ View Flight</button>` +
-      (!isReturn?`<button class="detailBtn alt" onclick="alert('下一版可加入Toyota confirmation及取車櫃位。')">🚙 Car Details</button>`:'');
-  }
-  else if(v.type==='flightUO690' || v.type==='flightUO671'){
-    const is671=v.type==='flightUO671';
-    body=`
-      <div class="richInfoCard">
-        <div class="flightHeader">
-          <div class="airlineWrap"><div class="airlineLogo uo">UO</div><div><b>HK Express</b><div class="note">${is671?'UO671 · NGO → HKG':'UO690 · HKG → NGO'}</div></div></div>
-          <div class="statusPill">已確認</div>
-        </div>
-        <div class="flightRoute">
-          <div><div class="flightCity">${is671?'名古屋 (NGO)':'香港 (HKG)'}</div><div class="flightTime">${is671?'20:45':'10:50'}</div></div>
-          <div class="routeArrow">→</div>
-          <div><div class="flightCity">${is671?'香港 (HKG)':'名古屋 (NGO)'}</div><div class="flightTime">${is671?'00:00+1':'15:50'}</div></div>
-        </div>
-      </div>
-      ${row('📍','中部國際機場 (NGO)','1-1 Centrair, Tokoname, Aichi 479-8701, Japan',true)}
-      ${row('👥','乘客',is671?'哥哥＋細佬＋嫂嫂':'細佬',true)}
-      <div class="mapPreview" data-label="Chubu Centrair International Airport"></div>
-    `;
-    buttons = mapBtn + `<button class="detailBtn alt" onclick="alert('可加入HK Express booking screenshot / terminal details。')">✈ View Flight</button>`;
-  }
-  // Hotel / hotel meet-up
-  else if(v.type==='hotel' || v.type==='hotelMeet'){
-    const isMeet=v.type==='hotelMeet';
-    body=`
-      <div class="detailActions" style="margin-top:0">
-        ${mapBtn}
-        <button class="detailBtn alt" onclick="alert('可加入酒店電話。')">☎ Call</button>
-        <button class="detailBtn alt" onclick="window.open('https://www.royalparkhotels.co.jp/ic/nagoya/','_blank')">↗ Website</button>
-        <button class="detailBtn alt" onclick="alert('可加入酒店email。')">✉ Email</button>
-      </div>
-      ${row('📍','The Royal Park Hotel Iconic Nagoya','4-1-1 Sakae, Naka-ku, Nagoya · 中日ビル24F',true)}
-      <div class="mapPreview" data-label="The Royal Park Hotel Iconic Nagoya"></div>
-      ${isMeet
-        ? row('👥','集合安排','哥哥＋嫂嫂由東京乘新幹線到名古屋後自行前往酒店 · 約19:00',true)
-        : row('📅','住宿安排','Kitty＋爸媽＋Quinn：9/25–9/30 · 2 rooms + breakfast',true)+
-          row('📅','哥哥＋細佬＋嫂嫂','9/25–9/28 · 2 rooms · no breakfast',true)+
-          row('🚗','Parking','Hotel public parking ¥1,800/day · cannot reserve',true)
-      }
-    `;
-    buttons='';
-  }
-  // Car rental
-  else if(v.type==='car1' || v.type==='car2'){
-    body=`
-      <div class="richInfoCard">
-        ${row('🚙',v.type==='car1'?'Toyota Alphard Hybrid':'Car 2', v.type==='car1'?'W3 Class · Non-smoking':'Small car · Sep 27–28')}
-        ${v.type==='car1'?row('📄','Reservation #','99920176000'):''}
-        ${v.type==='car1'?row('🕒','Pickup / Return','9/25 15:30 pickup · 9/30 by 14:30 return'):row('📍','Pickup / Return','Sakae附近取車 → NGO還車')}
-        ${v.type==='car1'?row('🪪','Bring','Passport + valid driving licence usable in Japan'):''}
-      </div>
-      <div class="mapPreview" data-label="${v.type==='car1'?'Toyota Rent a Car · NGO':'Sakae car rental / NGO return'}"></div>
-    `;
-    buttons = mapBtn;
-  }
-  // Generic but still designed detail
-  else{
-    let rows=(det.rows||[]).map(r=>row('•',r[0],r[1])).join('');
-    body=`<div class="richInfoCard">${rows}</div>`;
-    if(det.map) body += `<div class="mapPreview" data-label="${esc(v.title)}"></div>`;
-    buttons = mapBtn + savedBtn;
-  }
-
+  const rows=resolvedDetailRows(v);
+  const mapLink=resolvedDetailMap(v);
   const existing=localStorage.getItem(detailKey(day,event))||'';
+
+  const rowsHtml=rows.length
+    ? `<div class="richInfoCard">${rows.map(r=>`
+        <div class="infoRow">
+          <div class="infoIcon">•</div>
+          <div><b>${esc(r.label)}</b><div class="note">${esc(r.value)}</div></div>
+          <div class="rowArrow"></div>
+        </div>`).join('')}</div>`
+    : '';
+
   modalContent.innerHTML=`
-    <div class="modalkicker">${det.kicker||'TRIP DETAIL'}</div>
-    <div class="modaltitle">${det.icon||'📍'} ${v.title}</div>
-    <div class="modaldate">${dayLabel}</div>
-    <div class="modaltime">${v.time}</div>
-    ${body}
-    ${buttons?`<div class="detailActions">${buttons}</div>`:''}
+    <div class="modalkicker">${esc(det.kicker||'TRIP DETAIL')}</div>
+    <div class="modaltitle">${det.icon||'📍'} ${esc(v.title)}</div>
+    <div class="modaldate">${esc(dayLabel)}</div>
+    <div class="modaltime">${esc(v.time)}</div>
+
+    ${v.sub?`<div class="detailDescription"><b>Subtitle</b><br>${esc(v.sub)}</div>`:''}
+    ${v.detail?`<div class="detailDescription"><b>Description</b><br>${esc(v.detail)}</div>`:''}
+    ${rowsHtml}
+
     <div class="detailActions">
-      <button class="detailBtn alt" type="button" onclick="modalback.classList.remove('open');openEditEvent(${day},${event})">✎ Edit itinerary</button>
+      ${mapLink?`<button class="detailBtn" type="button" onclick="window.open('${esc(mapLink)}','_blank')">⌖ Open in Maps</button>`:''}
+      <button class="detailBtn alt" type="button"
+        onclick="modalback.classList.remove('open');openEditEvent(${day},${event})">✎ Edit itinerary</button>
     </div>
+
     <div id="eventPhotosHost"></div>
+
     <div class="remarksBox">
       <label>📝 備註 / Remarks</label>
-      <textarea maxlength="500" placeholder="${lang==='zh'?'Add your notes here…':'Add your notes here…'}"
+      <textarea maxlength="500" placeholder="Add your notes here…"
         oninput="saveDetailRemark(${day},${event},this.value)">${esc(existing)}</textarea>
       <div class="remarksMeta"><span id="remarkSaved"></span><span id="remarkCount">${existing.length}/500</span></div>
-    </div>`;
+    </div>
+  `;
+
   modalback.classList.add('open');
   renderEventPhotos(day,event);
 }
-function closeModal(e){modalback.classList.remove('open')}
+
 function showSavedFromModal(){
   modalback.classList.remove('open');
   document.querySelectorAll('main>section').forEach(s=>s.classList.add('hidden'));
@@ -1171,29 +1137,32 @@ function openAddEvent(){
 
 function openEditEvent(day,event){
   const v=DATA.zh.days[day].events[event];
-  const det=DETAILS[v.type]||{rows:[]};
-  const customRows=Array.isArray(v.customRows)
-    ? v.customRows.map(r=>({label:r.label||'',value:r.value||''}))
-    : (det.rows||[]).map(r=>({label:r[0]||'',value:r[1]||''}));
+  const customRows=resolvedDetailRows(v);
+  const remarks=localStorage.getItem(detailKey(day,event))||'';
 
   editKicker.textContent='EDIT ITINERARY';
-  editTitle.innerHTML=`<input id="fTitleTop" class="editableModalTitle" aria-label="Itinerary title" value="${esc(v.title)}">`;
+  editTitle.textContent=v.title;
+
   editForm.innerHTML=`
     <div class="formGrid">
-      <div class="formGroup"><label>時間 / Time</label><input id="fTime" value="${esc(v.time)}"></div>
-      <div class="formGroup"><label>類型 / Type</label><input id="fType" value="${esc(v.type)}"></div>
-
-      <div class="formGroup full"><label>簡短描述 / Subtitle</label><input id="fSub" value="${esc(v.sub)}"></div>
+      <div class="formGroup full">
+        <div class="modalSubtle">時間同行程 title 只可以喺 Itinerary → Edit mode 修改。</div>
+      </div>
 
       <div class="formGroup full">
-        <label>行程說明 / Description</label>
+        <label>Subtitle</label>
+        <input id="fSub" value="${esc(v.sub||'')}">
+      </div>
+
+      <div class="formGroup full">
+        <label>Description</label>
         <textarea id="fDetail">${esc(v.detail||'')}</textarea>
       </div>
 
       <div class="formGroup full mergedEditSection">
-        <div class="mergedEditSectionTitle">Details</div>
+        <div class="mergedEditSectionTitle">Map</div>
         <label>Google Maps link</label>
-        <input id="detailMap" value="${esc(v.customMap||det.map||'')}">
+        <input id="detailMap" value="${esc(resolvedDetailMap(v))}">
       </div>
 
       <div class="formGroup full">
@@ -1216,32 +1185,33 @@ function openEditEvent(day,event){
           <div class="attachHint">Booking confirmations, tickets, screenshots, parking info, etc. Photos stay on this device/browser.</div>
         </div>
       </div>
+
+      <div class="formGroup full mergedEditSection">
+        <div class="mergedEditSectionTitle">Remarks</div>
+        <textarea id="fRemarks" maxlength="500">${esc(remarks)}</textarea>
+      </div>
     </div>
 
     <div class="editbar">
       <button class="editbtn primary" type="submit">Save changes</button>
-      <button class="editbtn danger" type="button" onclick="deleteEvent(${day},${event});editBack.classList.remove('open')">Delete</button>
+      <button class="editbtn" type="button" onclick="editBack.classList.remove('open')">Cancel</button>
     </div>`;
 
-  window._editRows=customRows;
+  window._editRows=customRows.map(r=>({...r}));
   renderDetailRows();
 
   editForm.onsubmit=(e)=>{
     e.preventDefault();
 
-    Object.assign(v,{
-      time:inputVal('fTime')||'TBD',
-      title:inputVal('fTitleTop')||v.title,
-      sub:inputVal('fSub'),
-      type:inputVal('fType')||'free',
-      detail:inputVal('fDetail')
-    });
-
+    v.sub=inputVal('fSub');
+    v.detail=inputVal('fDetail');
     v.customMap=inputVal('detailMap');
     v.customRows=(window._editRows||[]).map((r,i)=>({
       label:(document.getElementById(`rowL${i}`)?.value||'').trim(),
       value:(document.getElementById(`rowV${i}`)?.value||'').trim()
     })).filter(r=>r.label||r.value);
+
+    localStorage.setItem(detailKey(day,event), inputVal('fRemarks'));
 
     persistItinerary();
     render();
