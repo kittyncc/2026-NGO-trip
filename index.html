@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>V37 — Master Saved List + Advanced Multi-Filter Database</title>
+<title>V38 — Simplified Saved Filters + Collapsible More Filters</title>
 <style>
 :root{
   --bg:#f7f6f2;--ink:#252525;--muted:#7b7b76;--accent:#8f4d61;--sage:#6f8374;
@@ -319,6 +319,15 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
   .savedCardActions{gap:4px}
   .savedCardIcon{width:28px;height:28px}
 }
+
+.savedFilterPrimary{display:grid;gap:9px}
+.savedMoreToggle{
+  border:1px solid var(--line);background:#fff;border-radius:999px;
+  padding:8px 12px;font-size:9px;font-weight:800;cursor:pointer;margin-top:2px
+}
+.savedAdvancedFilters{display:grid;gap:9px;margin-top:9px}
+.savedAdvancedFilters.hidden{display:none}
+.savedFilterSummary{font-size:9px;color:var(--muted);margin-left:6px}
 </style>
 </head>
 <body>
@@ -379,7 +388,7 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
   <div class="managerIntro">
     <div>
       <h2 id="savedTitle">Saved Places ♡</h2>
-      <div class="hint" style="margin-top:2px">Master Saved List · Search 名稱、notes 或 tags；filters 可以同時揀多個。</div>
+      <div class="hint" style="margin-top:2px">Master Saved List · 先用 Status / Category / Area；其他條件收喺 More filters。</div>
     </div>
     <button class="addFab" type="button" aria-label="Add saved place" onclick="openPlaceEditor('saved')">＋</button>
   </div>
@@ -1121,6 +1130,24 @@ function uniqueSavedTags(){
 
 
 const savedFilterOrder=['status','category','area','when','who','situation','practical','interest'];
+const savedPrimaryFilterOrder=['status','category','area'];
+const savedAdvancedFilterOrder=['when','who','situation','practical','interest'];
+
+function normalizedSavedStatus(p){
+  const raw=[p.status,...(p.labels||[])].join(' ').toLowerCase();
+  if(raw.includes('passed')) return '❌ Passed';
+  if(raw.includes('itinerary') || raw.includes('confirmed')) return '⭐ Itinerary';
+  if(raw.includes('want to go')) return '❤️ Want to Go';
+  if(raw.includes('backup')) return '🔄 Backup';
+  if(raw.includes('saved') || raw.includes('research')) return '♡ Saved';
+  return '♡ Saved';
+}
+
+function savedLabelsForFiltering(p){
+  const labels=(p.labels||[]).filter(Boolean);
+  const status=normalizedSavedStatus(p);
+  return [status,...labels.filter(x=>savedFilterGroupFor(x)!=='status')];
+}
 const savedFilterTitles={
   status:'Status',
   category:'Category',
@@ -1173,13 +1200,15 @@ function savedFilterGroupFor(label){
 function uniqueSavedTagsByGroup(){
   const groups=Object.fromEntries(savedFilterOrder.map(k=>[k,[]]));
   SAVED.forEach(p=>{
-    (p.labels||[]).filter(Boolean).forEach(label=>{
+    savedLabelsForFiltering(p).forEach(label=>{
       const clean=String(label).trim();
       const group=savedFilterGroupFor(clean);
       if(!groups[group].includes(clean)) groups[group].push(clean);
     });
   });
-  savedFilterOrder.forEach(group=>groups[group].sort((a,b)=>a.localeCompare(b)));
+  const statusOrder=['⭐ Itinerary','❤️ Want to Go','♡ Saved','🔄 Backup','❌ Passed'];
+  groups.status.sort((a,b)=>statusOrder.indexOf(a)-statusOrder.indexOf(b));
+  savedFilterOrder.filter(x=>x!=='status').forEach(group=>groups[group].sort((a,b)=>a.localeCompare(b)));
   return groups;
 }
 
@@ -1190,22 +1219,39 @@ function toggleSavedFilter(group,tag){
   applySavedSearch();
 }
 
+let savedAdvancedOpen=false;
+
+function savedFilterGroupHtml(group,groups){
+  const tags=groups[group]||[];
+  if(!tags.length)return '';
+  return `<div class="savedFilterGroup">
+    <div class="savedFilterLabel">${savedFilterTitles[group]}</div>
+    <div class="savedFilterChips">
+      ${tags.map(tag=>`<button class="savedMultiChip ${savedSelectedFilters[group].has(tag)?'active':''}"
+        type="button" onclick="toggleSavedFilter('${group}',${JSON.stringify(tag)})">${escapeHtml(tag)}</button>`).join('')}
+    </div>
+  </div>`;
+}
+
 function renderSavedFilterGroups(){
   const host=document.getElementById('savedFilterGroups');
   if(!host)return;
   const groups=uniqueSavedTagsByGroup();
+  const advancedCount=savedAdvancedFilterOrder.reduce((n,g)=>n+savedSelectedFilters[g].size,0);
 
-  host.innerHTML=savedFilterOrder.map(group=>{
-    const tags=groups[group];
-    if(!tags.length)return '';
-    return `<div class="savedFilterGroup">
-      <div class="savedFilterLabel">${savedFilterTitles[group]}</div>
-      <div class="savedFilterChips">
-        ${tags.map(tag=>`<button class="savedMultiChip ${savedSelectedFilters[group].has(tag)?'active':''}"
-          type="button" onclick="toggleSavedFilter('${group}',${JSON.stringify(tag)})">${escapeHtml(tag)}</button>`).join('')}
+  host.innerHTML=`
+    <div class="savedFilterPrimary">
+      ${savedPrimaryFilterOrder.map(g=>savedFilterGroupHtml(g,groups)).join('')}
+    </div>
+    <div>
+      <button class="savedMoreToggle" type="button" onclick="savedAdvancedOpen=!savedAdvancedOpen;renderSavedFilterGroups()">
+        ${savedAdvancedOpen?'Less filters ▴':'More filters ▾'}
+        ${advancedCount?`<span class="savedFilterSummary">· ${advancedCount} selected</span>`:''}
+      </button>
+      <div class="savedAdvancedFilters ${savedAdvancedOpen?'':'hidden'}">
+        ${savedAdvancedFilterOrder.map(g=>savedFilterGroupHtml(g,groups)).join('')}
       </div>
     </div>`;
-  }).join('');
 }
 
 function clearSavedFilters(){
@@ -1221,11 +1267,10 @@ function clearSavedSearch(){
 }
 
 function savedMatchesFilters(p){
-  const labels=(p.labels||[]).filter(Boolean);
+  const labels=savedLabelsForFiltering(p);
   return savedFilterOrder.every(group=>{
     const selected=[...savedSelectedFilters[group]];
     if(!selected.length)return true;
-    // OR within a group, AND across different groups.
     return selected.some(tag=>labels.includes(tag));
   });
 }
