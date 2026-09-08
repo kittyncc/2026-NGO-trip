@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>Nagoya Trip 2026 · v23</title>
+<title>Nagoya Trip 2026 · v24</title>
 <style>
 :root{
   --bg:#f7f6f2;--ink:#252525;--muted:#7b7b76;--accent:#8f4d61;--sage:#6f8374;
@@ -197,6 +197,16 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 
 .formGroup.full #detailEditPhotosHost,
 .formGroup.full #editPhotosHost{margin-top:4px}
+
+.placeHeader{position:relative}
+.placeQuickActions{display:flex;align-items:center;gap:6px;flex:0 0 auto;margin-left:10px}
+.placeIconBtn{
+  width:30px;height:30px;border:1px solid var(--line);border-radius:50%;
+  background:#fff;display:inline-flex;align-items:center;justify-content:center;
+  padding:0;font-size:14px;line-height:1;color:var(--ink);cursor:pointer
+}
+.placeIconBtn:hover{background:#f6f4f0}
+.placeActions.quickMoved{display:none}
 </style>
 </head>
 <body>
@@ -856,7 +866,7 @@ let SAVED=JSON.parse(localStorage.getItem('nagoyaSaved')||'null')||[
 function persistSaved(){localStorage.setItem('nagoyaSaved',JSON.stringify(SAVED))}
 function renderSaved(){
   SAVED=SAVED.map(p=>({...p,note:p.note||"",labels:p.labels||[p.tag,p.day].filter(Boolean)}));
-  savedList.innerHTML=SAVED.map((p,i)=>{const raw=((p.tag||'')+' '+(p.labels||[]).join(' ')).toLowerCase();let cats=[];if(raw.includes('food')||raw.includes('cafe')||raw.includes('restaurant'))cats.push('food');if(raw.includes('shopping'))cats.push('shopping');if(raw.includes('baby')||raw.includes('quinn'))cats.push('baby');if(raw.includes('sight'))cats.push('sightseeing');if((p.day||'').toLowerCase().includes('not scheduled'))cats.push('unscheduled');const labels=(p.labels||[p.tag,p.day]).filter(Boolean);return `<div class="savecard" data-tags="${cats.join(' ')}"><div class="placeHeader"><div><b>♡ ${escapeHtml(p.name)}</b><div class="placeTags">${labels.map(x=>`<span class="placeTag">${escapeHtml(x)}</span>`).join('')}</div></div><button class="placeMenu" type="button" onclick="openPlaceEditor('saved',${i})">•••</button></div>${p.note?`<div class="compactNotes noteDisplay"><label>備註 / Notes</label><div class="noteText">${escapeHtml(p.note)}</div></div>`:''}<div class="placeActions"><button class="smallbtn" onclick="window.open('${p.link}','_blank')">⌖ Maps</button><button class="smallbtn" onclick="assignDay(${i})">＋ Add to itinerary</button><button class="smallbtn" onclick="openPlaceEditor('saved',${i})">✎ Edit</button></div></div>`;}).join('');renderDynamicFilters();applySavedSearch();
+  savedList.innerHTML=SAVED.map((p,i)=>{const raw=((p.tag||'')+' '+(p.labels||[]).join(' ')).toLowerCase();let cats=[];if(raw.includes('food')||raw.includes('cafe')||raw.includes('restaurant'))cats.push('food');if(raw.includes('shopping'))cats.push('shopping');if(raw.includes('baby')||raw.includes('quinn'))cats.push('baby');if(raw.includes('sight'))cats.push('sightseeing');if((p.day||'').toLowerCase().includes('not scheduled'))cats.push('unscheduled');const labels=(p.labels||[p.tag,p.day]).filter(Boolean);return `<div class="savecard" data-tags="${cats.join(' ')}"><div class="placeHeader"><div><b>♡ ${escapeHtml(p.name)}</b><div class="placeTags">${labels.map(x=>`<span class="placeTag">${escapeHtml(x)}</span>`).join('')}</div></div><div class="placeQuickActions"><button class="placeIconBtn" type="button" title="Maps" aria-label="Open in Maps" onclick="window.open('${p.link}','_blank')">⌖</button><button class="placeIconBtn" type="button" title="Add to itinerary" aria-label="Add to itinerary" onclick="assignDay(${i})">＋</button><button class="placeIconBtn" type="button" title="Edit" aria-label="Edit place" onclick="openPlaceEditor('saved',${i})">✎</button></div></div>${p.note?`<div class="compactNotes noteDisplay"><label>備註 / Notes</label><div class="noteText">${escapeHtml(p.note)}</div></div>`:''}</div>`;}).join('');renderDynamicFilters();applySavedSearch();
 }
 function escapeHtml(value){
   return String(value||"")
@@ -1164,7 +1174,7 @@ function resetCustomDetails(day,event){
 
 
 function categoryFromLabels(labels=[]){const raw=labels.join(' ').toLowerCase();const tags=[];if(raw.includes('hotel'))tags.push('hotel');if(raw.includes('transport')||raw.includes('airport')||raw.includes('car'))tags.push('transport');if(raw.includes('food')||raw.includes('cafe')||raw.includes('restaurant'))tags.push('food');if(raw.includes('shopping'))tags.push('shopping');if(raw.includes('sight'))tags.push('sightseeing');if(raw.includes('baby')||raw.includes('quinn'))tags.push('baby');return [...new Set(tags)];}
-function renderMapPlaces(){const list=document.getElementById('mapPlaceList');if(!list)return;list.innerHTML=MAP_PLACES.map((p,i)=>`<div class="card mapPlace" data-tags="${(p.tags||categoryFromLabels(p.labels||[])).join(' ')}"><div class="placeHeader"><div><b>${escapeHtml(p.name)}</b><div class="placeTags">${(p.labels||[]).map(x=>`<span class="placeTag">${escapeHtml(x)}</span>`).join('')}</div></div><button class="placeMenu" type="button" onclick="openPlaceEditor('map',${i})">•••</button></div>${p.note?`<div class="compactNotes noteDisplay"><label>備註 / Notes</label><div class="noteText">${escapeHtml(p.note)}</div></div>`:''}<div class="placeActions"><button class="smallbtn" onclick="window.open('${p.link}','_blank')">⌖ Maps</button><button class="smallbtn" onclick="openPlaceEditor('map',${i})">✎ Edit</button></div></div>`).join('');applyMapSearch();}
+function renderMapPlaces(){const list=document.getElementById('mapPlaceList');if(!list)return;list.innerHTML=MAP_PLACES.map((p,i)=>`<div class="card mapPlace" data-tags="${(p.tags||categoryFromLabels(p.labels||[])).join(' ')}"><div class="placeHeader"><div><b>${escapeHtml(p.name)}</b><div class="placeTags">${(p.labels||[]).map(x=>`<span class="placeTag">${escapeHtml(x)}</span>`).join('')}</div></div><div class="placeQuickActions"><button class="placeIconBtn" type="button" title="Maps" aria-label="Open in Maps" onclick="window.open('${p.link}','_blank')">⌖</button><button class="placeIconBtn" type="button" title="Edit" aria-label="Edit place" onclick="openPlaceEditor('map',${i})">✎</button></div></div>${p.note?`<div class="compactNotes noteDisplay"><label>備註 / Notes</label><div class="noteText">${escapeHtml(p.note)}</div></div>`:''}</div>`).join('');applyMapSearch();}
 function applyMapFilter(filter){document.querySelectorAll('#mapPlaceList .mapPlace').forEach(card=>{const tags=(card.dataset.tags||'').split(/\s+/);card.classList.toggle('hiddenByTag',filter!=='all'&&!tags.includes(filter));});}
 function flashSaved(id){const el=document.getElementById(id);if(!el)return;el.textContent=lang==='zh'?'已儲存 ✓':'Saved ✓';setTimeout(()=>{if(el)el.textContent='';},1000);}
 function saveMapNote(i,v){MAP_PLACES[i].note=v;persistMapPlaces();flashSaved('mapNote'+i);}
