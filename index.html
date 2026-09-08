@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>Nagoya Trip 2026</title>
+<title>Nagoya Trip 2026 · v17</title>
 <style>
 :root{
   --bg:#f7f6f2;--ink:#252525;--muted:#7b7b76;--accent:#8f4d61;--sage:#6f8374;
@@ -525,7 +525,11 @@ const DEFAULT_MAP_PLACES=[
 {name:"AEON Mall Tokoname",link:"https://www.google.com/maps/search/?api=1&query=AEON+Mall+Tokoname",tags:["shopping"],labels:["🛍 Shopping","Day 6"],note:"最後快速shopping"},
 {name:"Costco Chubu Airport",link:"https://www.google.com/maps/search/?api=1&query=Costco+Chubu+Airport",tags:["shopping","food"],labels:["🛍 Shopping","🍴 Food","Day 6"],note:"Shopping + Food Court Lunch"}
 ];
-let MAP_PLACES=JSON.parse(localStorage.getItem('nagoyaMapPlaces')||'null')||JSON.parse(JSON.stringify(DEFAULT_MAP_PLACES));
+let _oldMapPlaces=null;
+try{ _oldMapPlaces=JSON.parse(localStorage.getItem('nagoyaMapPlaces')||'null'); }catch(e){}
+let MAP_PLACES=(Array.isArray(_oldMapPlaces)&&_oldMapPlaces.length)
+  ? _oldMapPlaces
+  : JSON.parse(JSON.stringify(DEFAULT_MAP_PLACES));
 function persistMapPlaces(){localStorage.setItem('nagoyaMapPlaces',JSON.stringify(MAP_PLACES));}
 
 let SAVED=JSON.parse(localStorage.getItem('nagoyaSaved')||'null')||[
@@ -537,7 +541,7 @@ let SAVED=JSON.parse(localStorage.getItem('nagoyaSaved')||'null')||[
 function persistSaved(){localStorage.setItem('nagoyaSaved',JSON.stringify(SAVED))}
 function renderSaved(){
   SAVED=SAVED.map(p=>({...p,note:p.note||"",labels:p.labels||[p.tag,p.day].filter(Boolean)}));
-  savedList.innerHTML=SAVED.map((p,i)=>{const raw=((p.tag||'')+' '+(p.labels||[]).join(' ')).toLowerCase();let cats=[];if(raw.includes('food')||raw.includes('cafe')||raw.includes('restaurant'))cats.push('food');if(raw.includes('shopping'))cats.push('shopping');if(raw.includes('baby')||raw.includes('quinn'))cats.push('baby');if(raw.includes('sight'))cats.push('sightseeing');if((p.day||'').toLowerCase().includes('not scheduled'))cats.push('unscheduled');const labels=(p.labels||[p.tag,p.day]).filter(Boolean);return `<div class="savecard" data-tags="${cats.join(' ')}"><div class="placeHeader"><div><b>♡ ${escapeHtml(p.name)}</b><div class="placeTags">${labels.map(x=>`<span class="placeTag">${escapeHtml(x)}</span>`).join('')}</div></div><button class="placeMenu" type="button" onclick="openPlaceEditor('saved',${i})">•••</button></div>${p.note?`<div class="compactNotes noteDisplay"><label>備註 / Notes</label><div class="noteText">${escapeHtml(p.note)}</div></div>`:''}<div class="placeActions"><button class="smallbtn" onclick="window.open('${p.link}','_blank')">⌖ Maps</button><button class="smallbtn" onclick="assignDay(${i})">＋ Add to itinerary</button><button class="smallbtn" onclick="openPlaceEditor('saved',${i})">✎ Edit</button></div></div>`;}).join('');applySavedFilter(document.querySelector('#savedFilters .filterchip.active')?.dataset.filter||'all');
+  savedList.innerHTML=SAVED.map((p,i)=>{const raw=((p.tag||'')+' '+(p.labels||[]).join(' ')).toLowerCase();let cats=[];if(raw.includes('food')||raw.includes('cafe')||raw.includes('restaurant'))cats.push('food');if(raw.includes('shopping'))cats.push('shopping');if(raw.includes('baby')||raw.includes('quinn'))cats.push('baby');if(raw.includes('sight'))cats.push('sightseeing');if((p.day||'').toLowerCase().includes('not scheduled'))cats.push('unscheduled');const labels=(p.labels||[p.tag,p.day]).filter(Boolean);return `<div class="savecard" data-tags="${cats.join(' ')}"><div class="placeHeader"><div><b>♡ ${escapeHtml(p.name)}</b><div class="placeTags">${labels.map(x=>`<span class="placeTag">${escapeHtml(x)}</span>`).join('')}</div></div><button class="placeMenu" type="button" onclick="openPlaceEditor('saved',${i})">•••</button></div>${p.note?`<div class="compactNotes noteDisplay"><label>備註 / Notes</label><div class="noteText">${escapeHtml(p.note)}</div></div>`:''}<div class="placeActions"><button class="smallbtn" onclick="window.open('${p.link}','_blank')">⌖ Maps</button><button class="smallbtn" onclick="assignDay(${i})">＋ Add to itinerary</button><button class="smallbtn" onclick="openPlaceEditor('saved',${i})">✎ Edit</button></div></div>`;}).join('');renderDynamicFilters();applySavedSearch();
 }
 function escapeHtml(value){
   return String(value||"")
@@ -587,19 +591,57 @@ function renderDynamicFilters(){
   const mapTags=uniqueMapTags();
   const savedTags=uniqueSavedTags();
 
-  mapFilters.innerHTML=
-    `<button class="filterchip active" type="button" data-filter="all" onclick="syncMapFilter('all')">All</button>`+
-    mapTags.map(t=>`<button class="filterchip" type="button" data-filter="${escapeHtml(t)}" onclick="syncMapFilter(${JSON.stringify(t)})">${escapeHtml(t)}</button>`).join('');
-  mapTagFilter.innerHTML=`<option value="all">All tags</option>`+
-    mapTags.map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+  mapFilters.innerHTML=`<button class="filterchip" type="button" data-filter="all">All</button>`+
+    mapTags.map((t,i)=>`<button class="filterchip" type="button" data-filter-index="${i}">${escapeHtml(t)}</button>`).join('');
+  [...mapFilters.querySelectorAll('.filterchip')].forEach((btn,i)=>{
+    btn.onclick=()=>syncMapFilter(i===0?'all':mapTags[i-1]);
+  });
 
-  savedFilters.innerHTML=
-    `<button class="filterchip active" type="button" data-filter="all" onclick="syncSavedFilter('all')">All</button>`+
-    savedTags.map(t=>`<button class="filterchip" type="button" data-filter="${escapeHtml(t)}" onclick="syncSavedFilter(${JSON.stringify(t)})">${escapeHtml(t)}</button>`).join('');
+  mapTagFilter.innerHTML=`<option value="all">All tags</option>`+
+    mapTags.map((t,i)=>`<option value="${i}">${escapeHtml(t)}</option>`).join('');
+  mapTagFilter.onchange=()=>{
+    const v=mapTagFilter.value;
+    syncMapFilter(v==='all'?'all':mapTags[Number(v)]);
+  };
+
+  savedFilters.innerHTML=`<button class="filterchip" type="button" data-filter="all">All</button>`+
+    savedTags.map((t,i)=>`<button class="filterchip" type="button" data-filter-index="${i}">${escapeHtml(t)}</button>`).join('');
+  [...savedFilters.querySelectorAll('.filterchip')].forEach((btn,i)=>{
+    btn.onclick=()=>syncSavedFilter(i===0?'all':savedTags[i-1]);
+  });
+
   savedTagFilter.innerHTML=`<option value="all">All tags</option>`+
-    savedTags.map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+    savedTags.map((t,i)=>`<option value="${i}">${escapeHtml(t)}</option>`).join('');
+  savedTagFilter.onchange=()=>{
+    const v=savedTagFilter.value;
+    syncSavedFilter(v==='all'?'all':savedTags[Number(v)]);
+  };
+
+  syncFilterVisuals();
 }
 
+function syncFilterVisuals(){
+  const mapTags=uniqueMapTags();
+  const savedTags=uniqueSavedTags();
+
+  [...document.querySelectorAll('#mapFilters .filterchip')].forEach((b,i)=>{
+    const val=i===0?'all':mapTags[i-1];
+    b.classList.toggle('active',val===currentMapTag);
+  });
+  if(document.getElementById('mapTagFilter')){
+    const mi=mapTags.indexOf(currentMapTag);
+    mapTagFilter.value=currentMapTag==='all'?'all':String(mi);
+  }
+
+  [...document.querySelectorAll('#savedFilters .filterchip')].forEach((b,i)=>{
+    const val=i===0?'all':savedTags[i-1];
+    b.classList.toggle('active',val===currentSavedTag);
+  });
+  if(document.getElementById('savedTagFilter')){
+    const si=savedTags.indexOf(currentSavedTag);
+    savedTagFilter.value=currentSavedTag==='all'?'all':String(si);
+  }
+}
 function placeHaystack(p){
   return norm([p.name,p.note,...(p.labels||[]),p.tag,p.day].filter(Boolean).join(' '));
 }
@@ -610,14 +652,12 @@ function hasExactLabel(p,tag){
 }
 function syncMapFilter(tag){
   currentMapTag=tag||'all';
-  if(document.getElementById('mapTagFilter')) mapTagFilter.value=currentMapTag;
-  document.querySelectorAll('#mapFilters .filterchip').forEach(b=>b.classList.toggle('active',b.dataset.filter===currentMapTag));
+  syncFilterVisuals();
   applyMapSearch();
 }
 function syncSavedFilter(tag){
   currentSavedTag=tag||'all';
-  if(document.getElementById('savedTagFilter')) savedTagFilter.value=currentSavedTag;
-  document.querySelectorAll('#savedFilters .filterchip').forEach(b=>b.classList.toggle('active',b.dataset.filter===currentSavedTag));
+  syncFilterVisuals();
   applySavedSearch();
 }
 function applyMapSearch(){
