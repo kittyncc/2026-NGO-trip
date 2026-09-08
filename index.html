@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>Nagoya Trip 2026 · v20</title>
+<title>Nagoya Trip 2026 · v22</title>
 <style>
 :root{
   --bg:#f7f6f2;--ink:#252525;--muted:#7b7b76;--accent:#8f4d61;--sage:#6f8374;
@@ -116,7 +116,7 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 .remarksBox textarea{width:100%;min-height:92px;border:1px solid #dfcdd2;border-radius:14px;padding:12px;font:inherit;font-size:11px;resize:vertical;background:#fff;color:var(--ink);outline:none}
 .remarksMeta{display:flex;justify-content:space-between;gap:12px;margin-top:6px;font-size:8px;color:var(--muted)}
 @media(max-width:520px){
-  .modal{width:94vw;height:84vh;padding:24px 20px 22px}
+  .modal{width:94vw;height:88vh;padding:24px 20px 22px}
   .modaltitle{font-size:23px}
   .detailActions .detailBtn{flex:1 1 auto}
 }
@@ -194,6 +194,9 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
   .attachGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
 }
 
+
+.formGroup.full #detailEditPhotosHost,
+.formGroup.full #editPhotosHost{margin-top:4px}
 </style>
 </head>
 <body>
@@ -467,14 +470,106 @@ async function deleteEventPhoto(id){
 function photoObjectURL(blob){ return URL.createObjectURL(blob); }
 
 
+
+async function renderDetailEditPhotos(day,event){
+  const host=document.getElementById('detailEditPhotosHost');
+  if(!host) return;
+
+  const addTile=`
+    <label class="attachAdd">
+      <span class="plus">＋</span>
+      <span>Add photo</span>
+      <input type="file" accept="image/*" multiple hidden
+        onchange="handleDetailEditPhotoUpload(${day},${event},this.files);this.value=''">
+    </label>`;
+
+  const key=photoEventKey(day,event);
+  let photos=[];
+  try{
+    photos=await getEventPhotos(key);
+  }catch(e){
+    host.innerHTML=`
+      <div class="attachGrid">${addTile}</div>
+      <div class="attachHint">Tap Add photo to attach a confirmation image.</div>`;
+    return;
+  }
+
+  const cards=photos.map(p=>{
+    const url=photoObjectURL(p.blob);
+    return `<div class="attachThumb" onclick="openPhotoViewer('${url}')">
+      <img src="${url}" alt="${esc(p.name||'attachment')}">
+      <button class="attachDelete" type="button" aria-label="Delete photo"
+        onclick="event.stopPropagation();removeDetailEditPhoto(${day},${event},${p.id})">×</button>
+    </div>`;
+  }).join('');
+
+  host.innerHTML=`
+    <div class="attachGrid">
+      ${cards}
+      ${photos.length<MAX_PHOTOS_PER_EVENT?addTile:''}
+    </div>
+    <div class="attachHint">Booking confirmations, tickets, screenshots, parking info, etc. Photos stay on this device/browser.</div>`;
+}
+
+async function handleDetailEditPhotoUpload(day,event,fileList){
+  const files=[...fileList];
+  if(!files.length) return;
+
+  const key=photoEventKey(day,event);
+  let existing=[];
+  try{ existing=await getEventPhotos(key); }catch(e){}
+  const room=Math.max(0,MAX_PHOTOS_PER_EVENT-existing.length);
+
+  if(room<=0){
+    alert(`最多 ${MAX_PHOTOS_PER_EVENT} 張相。`);
+    return;
+  }
+
+  for(const file of files.slice(0,room)){
+    if(!file.type.startsWith('image/')) continue;
+
+    if(file.size>MAX_PHOTO_BYTES){
+      alert(`${file.name} 超過 10MB，請揀細啲嘅圖片。`);
+      continue;
+    }
+
+    try{
+      await addEventPhoto(key,file);
+    }catch(e){
+      alert('Unable to save this photo in the browser.');
+      break;
+    }
+  }
+
+  await renderDetailEditPhotos(day,event);
+}
+
+async function removeDetailEditPhoto(day,event,id){
+  if(!confirm('Delete this photo?')) return;
+  await deleteEventPhoto(id);
+  await renderDetailEditPhotos(day,event);
+}
+
 async function renderEditEventPhotos(day,event){
   const host=document.getElementById('editPhotosHost');
   if(!host) return;
+
+  const addTile=`
+    <label class="attachAdd">
+      <span class="plus">＋</span>
+      <span>Add photo</span>
+      <input type="file" accept="image/*" multiple hidden
+        onchange="handleEditEventPhotoUpload(${day},${event},this.files);this.value=''">
+    </label>`;
+
   const key=photoEventKey(day,event);
   let photos=[];
-  try{ photos=await getEventPhotos(key); }
-  catch(e){
-    host.innerHTML=`<div class="attachHint">Photos unavailable in this browser.</div>`;
+  try{
+    photos=await getEventPhotos(key);
+  }catch(e){
+    host.innerHTML=`
+      <div class="attachGrid">${addTile}</div>
+      <div class="attachHint">Tap Add photo to attach a confirmation image. If saving fails, this browser may be blocking local photo storage.</div>`;
     return;
   }
 
@@ -490,13 +585,7 @@ async function renderEditEventPhotos(day,event){
   host.innerHTML=`
     <div class="attachGrid">
       ${cards}
-      ${photos.length<MAX_PHOTOS_PER_EVENT?`
-        <label class="attachAdd">
-          <span class="plus">＋</span>
-          <span>Add photo</span>
-          <input type="file" accept="image/*" multiple hidden
-            onchange="handleEditEventPhotoUpload(${day},${event},this.files);this.value=''">
-        </label>`:''}
+      ${photos.length<MAX_PHOTOS_PER_EVENT?addTile:''}
     </div>
     <div class="attachHint">Booking confirmations, tickets, screenshots, parking info, etc. Photos stay on this device/browser.</div>`;
 }
@@ -951,7 +1040,17 @@ function openEditEvent(day,event){
       <div class="formGroup full"><label>Details</label><textarea id="fDetail">${esc(v.detail)}</textarea></div>
       <div class="formGroup full">
         <label>Photos / Attachments</label>
-        <div id="editPhotosHost"></div>
+        <div id="editPhotosHost">
+          <div class="attachGrid">
+            <label class="attachAdd">
+              <span class="plus">＋</span>
+              <span>Add photo</span>
+              <input type="file" accept="image/*" multiple hidden
+                onchange="handleEditEventPhotoUpload(${day},${event},this.files);this.value=''">
+            </label>
+          </div>
+          <div class="attachHint">Booking confirmations, tickets, screenshots, parking info, etc. Photos stay on this device/browser.</div>
+        </div>
       </div>
     </div>
     <div class="editbar">
@@ -1010,12 +1109,29 @@ function openEditDetails(day,event){
     <div class="formGroup"><label>Google Maps link</label><input id="detailMap" value="${esc(v.customMap||det.map||'')}"></div>
     <div class="formGroup"><label>Detail rows</label><div id="rowEditor"></div></div>
     <button class="editbtn" type="button" onclick="addDetailRow()">＋ Add detail row</button>
+
+    <div class="formGroup full" style="margin-top:18px">
+      <label>Photos / Attachments</label>
+      <div id="detailEditPhotosHost">
+        <div class="attachGrid">
+          <label class="attachAdd">
+            <span class="plus">＋</span>
+            <span>Add photo</span>
+            <input type="file" accept="image/*" multiple hidden
+              onchange="handleDetailEditPhotoUpload(${day},${event},this.files);this.value=''">
+          </label>
+        </div>
+        <div class="attachHint">Booking confirmations, tickets, screenshots, parking info, etc. Photos stay on this device/browser.</div>
+      </div>
+    </div>
+
     <div class="editbar">
       <button class="editbtn primary" type="submit">Save details</button>
       <button class="editbtn danger" type="button" onclick="resetCustomDetails(${day},${event})">Reset details</button>
     </div>`;
   window._editRows=customRows;
   renderDetailRows();
+  renderDetailEditPhotos(day,event);
   editForm.onsubmit=(e)=>{
     e.preventDefault();
     v.customMap=inputVal('detailMap');
