@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>V36 — Saved Places Notes + Multi-Filter Management</title>
+<title>V37 — Master Saved List + Advanced Multi-Filter Database</title>
 <style>
 :root{
   --bg:#f7f6f2;--ink:#252525;--muted:#7b7b76;--accent:#8f4d61;--sage:#6f8374;
@@ -379,7 +379,7 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
   <div class="managerIntro">
     <div>
       <h2 id="savedTitle">Saved Places ♡</h2>
-      <div class="hint" style="margin-top:2px">Search 名稱、notes 或 tags；filters 可以同時揀多個。</div>
+      <div class="hint" style="margin-top:2px">Master Saved List · Search 名稱、notes 或 tags；filters 可以同時揀多個。</div>
     </div>
     <button class="addFab" type="button" aria-label="Add saved place" onclick="openPlaceEditor('saved')">＋</button>
   </div>
@@ -1005,12 +1005,43 @@ let MAP_PLACES=validPlaceList(_oldMapPlaces)?_oldMapPlaces:JSON.parse(JSON.strin
 function persistMapPlaces(){localStorage.setItem('nagoyaMapPlaces',JSON.stringify(MAP_PLACES));}
 if(!validPlaceList(_oldMapPlaces))persistMapPlaces();
 
-let SAVED=JSON.parse(localStorage.getItem('nagoyaSaved')||'null')||[
-{name:"鳥開総本家",link:"https://www.google.com/maps/search/?api=1&query=Torikai+Sohonten+Nagoya",tag:"🍴 Food",day:"Day 2 candidate"},
-{name:"mimi33",link:"https://www.google.com/maps/search/?api=1&query=mimi33+Nagoya",tag:"🛍 Shopping",day:"Day 2"},
-{name:"Aeta",link:"https://www.google.com/maps/search/?api=1&query=Aeta+Nagoya",tag:"🛍 Shopping",day:"Not scheduled"},
-{name:"Chiikawa Land",link:"https://www.google.com/maps/search/?api=1&query=Chiikawa+Land+Nagoya+PARCO",tag:"🛍 Shopping",day:"Day 2"}
-];
+const MASTER_SAVED_V37=[{"name":"炭火焼鳥しげ 栄本店","link":"https://www.google.com/maps/search/?api=1&query=%E7%82%AD%E7%81%AB%E7%84%BC%E9%B3%A5%E3%81%97%E3%81%92+%E6%A0%84%E6%9C%AC%E5%BA%97","labels":["⭐ Confirmed / Itinerary","📍 Sakae","🍴 Food","🐔 Yakitori","🍽 Dinner","🇯🇵 Japanese","👨‍👩‍👧 Whole Family","📅 Reservation","⏰ Time Sensitive"],"note":"9/26 18:00 booked。炭火燒鳥，Day 2晚餐。當日Lunch如果食親子丼，就會變成全日比較多雞，所以Lunch可以考慮其他類型。⚠️ 原本booking人數要確認有冇改成6 adults + Quinn。","day":"Not scheduled","status":"⭐ Confirmed / Itinerary","area":"📍 Sakae"},{"name":"飛騨牛一頭家 馬喰一代 名古屋栄","link":"https://www.google.com/maps/search/?api=1&query=%E9%A3%9B%E9%A8%A8%E7%89%9B%E4%B8%80%E9%A0%AD%E5%AE%B6+%E9%A6%AC%E5%96%B0%E4%B8%80%E4%BB%A3+%E5%90%8D%E5%8F%A4%E5%B1%8B%E6%A0%84","labels":["⭐ Confirmed / Itinerary","📍 Sakae","🍴 Food","🥩 Hida Beef","🍽 Dinner","👨‍👩‍👧 Whole Family","🪑 Big Group","📅 Reservation","⏰ Time Sensitive","🚪 Private Room"],"note":"9/27 18:30 booked，private room。Day 3 LaLaport後返Sakae食。媽媽唔食牛，要留意non-beef choices。⚠️ Booking人數要確認有冇update至全團。","day":"Not scheduled","status":"⭐ Confirmed / Itinerary","area":"📍 Sakae"},{"name":"鰻う おか冨士 / Okafuji","link":"https://www.google.com/maps/search/?api=1&query=%E9%B0%BB%E3%81%86+%E3%81%8A%E3%81%8B%E5%86%A8%E5%A3%AB+++Okafuji","labels":["⭐ Confirmed / Itinerary","📍 Fushimi","🍴 Food","🐟 Unagi","🍱 Lunch","🇯🇵 Nagoya Local","🔥 Must Try","👨‍👩‍👧 Whole Family","📅 Reservation","⏰ Time Sensitive"],"note":"9/29 11:30 booked，3 adults + Quinn。Day 5熱田神宮之後食，再去大須。呢間係正式行程，其他鰻魚店主要做backup。","day":"Not scheduled","status":"⭐ Confirmed / Itinerary","area":"📍 Fushimi"},{"name":"Hirudake Unagiya","link":"https://www.google.com/maps/search/?api=1&query=Hirudake+Unagiya","labels":["♡ Saved / Backup","🍴 Food","🐟 Unagi","🇯🇵 Japanese","🔄 Backup"],"note":"你Google Maps saved嘅鰻魚店。因為已經book咗Okafuji，所以今次唔需要專程去；Okafuji有變先考慮。","day":"Not scheduled","status":"♡ Saved / Backup","area":""},{"name":"麺家 獅子丸 / Shishimaru","link":"https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%AE%B6+%E7%8D%85%E5%AD%90%E4%B8%B8+++Shishimaru","labels":["♡ Saved","📍 Nagoya Station","🍴 Food","🍜 Ramen","⚡ Quick Meal","🔄 Backup","🌧 Rainy Day"],"note":"你Google Maps saved。偏creamy雞白湯系拉麵。適合Nagoya Station附近臨時想食嘢，唔需要特登排入行程。","day":"Not scheduled","status":"♡ Saved","area":"📍 Nagoya Station"},{"name":"鳥開総本家 名駅ユニモール店","link":"https://www.google.com/maps/search/?api=1&query=%E9%B3%A5%E9%96%8B%E7%B7%8F%E6%9C%AC%E5%AE%B6+%E5%90%8D%E9%A7%85%E3%83%A6%E3%83%8B%E3%83%A2%E3%83%BC%E3%83%AB%E5%BA%97","labels":["♡ Saved / Lunch Candidate","📍 Nagoya Station","🍴 Food","🐔 Chicken","🍚 Oyakodon","🍱 Lunch","🇯🇵 Nagoya Local","⚡ Convenient"],"note":"名古屋コーチン親子丼。Day 2 Lunch候選，位置方便Takashimaya shopping；但當晚Shige又係雞，所以未必需要Lunch再食雞。","day":"Not scheduled","status":"♡ Saved / Lunch Candidate","area":"📍 Nagoya Station"},{"name":"とり五鐵 / Tori Gotetsu","link":"https://www.google.com/maps/search/?api=1&query=%E3%81%A8%E3%82%8A%E4%BA%94%E9%90%B5+++Tori+Gotetsu","labels":["♡ Saved / Lunch Candidate","📍 Nagoya Station","🍴 Food","🐔 Chicken","🍚 Oyakodon","🍱 Lunch","🇯🇵 Nagoya Local","👨‍👩‍👧 Whole Family","🪑 Big Group"],"note":"Day 2 Lunch候選。比細小喫茶店舒服，較適合成家人坐低食；同樣要考慮晚餐Shige係雞。","day":"Not scheduled","status":"♡ Saved / Lunch Candidate","area":"📍 Nagoya Station"},{"name":"こなな KITTE名古屋","link":"https://www.google.com/maps/search/?api=1&query=%E3%81%93%E3%81%AA%E3%81%AA+KITTE%E5%90%8D%E5%8F%A4%E5%B1%8B","labels":["♡ Saved / Lunch Candidate","📍 Nagoya Station","🍴 Food","🍝 Japanese Pasta","🍱 Lunch","👶 Quinn Friendly","👵🏻👴🏻 Parents Friendly","🌧 Rainy Day"],"note":"和風dashi pasta。Day 2如果唔想Lunch＋Dinner都食雞，呢個係幾好嘅轉口味option。","day":"Not scheduled","status":"♡ Saved / Lunch Candidate","area":"📍 Nagoya Station"},{"name":"炉端焼き アナタと博多 名古屋駅前店","link":"https://www.google.com/maps/search/?api=1&query=%E7%82%89%E7%AB%AF%E7%84%BC%E3%81%8D+%E3%82%A2%E3%83%8A%E3%82%BF%E3%81%A8%E5%8D%9A%E5%A4%9A+%E5%90%8D%E5%8F%A4%E5%B1%8B%E9%A7%85%E5%89%8D%E5%BA%97","labels":["♡ Saved","📍 Nagoya Station","🍴 Food","🐔 Oyakodon","🐟 Grilled Fish","🌙 Dinner","📱 IG Find"],"note":"你見到「人生の最後に食べたいのは親子丼」嗰間。之前研究後發現主要係晚市，所以唔適合Day 2 Lunch；保留Saved。","day":"Not scheduled","status":"♡ Saved","area":"📍 Nagoya Station"},{"name":"MIKOTO","link":"https://www.google.com/maps/search/?api=1&query=MIKOTO","labels":["♡ Saved / Backup","📍 Sakae","🍴 Food","🍽 Dinner","🐔 Nagoya Cochin","🔄 Backup","⚡ Near Hotel"],"note":"Day 1 arrival dinner backup。到酒店後如果大家仲有精神先考慮，唔需要預先鎖死。","day":"Not scheduled","status":"♡ Saved / Backup","area":"📍 Sakae"},{"name":"麺屋はやぶさ","link":"https://www.google.com/maps/search/?api=1&query=%E9%BA%BA%E5%B1%8B%E3%81%AF%E3%82%84%E3%81%B6%E3%81%95","labels":["♡ Saved","🍴 Food","🍜 Ramen","⚡ Quick Meal","🔄 Backup"],"note":"方便先食型。適合行程有變／臨時想食ramen，唔值得為佢改route。","day":"Not scheduled","status":"♡ Saved","area":""},{"name":"やばい魚屋さん","link":"https://www.google.com/maps/search/?api=1&query=%E3%82%84%E3%81%B0%E3%81%84%E9%AD%9A%E5%B1%8B%E3%81%95%E3%82%93","labels":["♡ Saved","🍴 Food","🐟 Seafood","🇯🇵 Japanese","🔄 Backup"],"note":"Seafood option。保留作為媽媽唔食牛時嘅另一類選擇。","day":"Not scheduled","status":"♡ Saved","area":""},{"name":"牛たん 牛串 かわせ","link":"https://www.google.com/maps/search/?api=1&query=%E7%89%9B%E3%81%9F%E3%82%93+%E7%89%9B%E4%B8%B2+%E3%81%8B%E3%82%8F%E3%81%9B","labels":["❌ Passed","🍴 Food","🥩 Beef","❌ Not Suitable"],"note":"研究過做Day 2 Lunch，但星期六Lunch唔適合，而且媽媽唔食牛，所以今次pass。","day":"Not scheduled","status":"❌ Passed","area":""},{"name":"na.Nagoya","link":"https://www.google.com/maps/search/?api=1&query=na.Nagoya","labels":["❌ Passed","🍴 Food"],"note":"之前考慮過，最後決定唔放入今次行程。","day":"Not scheduled","status":"❌ Passed","area":""},{"name":"️ コンパル 大須本店 / Konparu Osu Honten","link":"https://www.google.com/maps/search/?api=1&query=%EF%B8%8F+%E3%82%B3%E3%83%B3%E3%83%91%E3%83%AB+%E5%A4%A7%E9%A0%88%E6%9C%AC%E5%BA%97+++Konparu+Osu+Honten","labels":["❤️ Want to Go / Itinerary Candidate","📍 Osu","☕ Café","🍞 Ogura Toast","🥪 Ebi Fry Sandwich","🇯🇵 Nagoya Local","☕ Afternoon","🔥 Must Try"],"note":"Day 5大須行街期間約15:00去最順。想試小倉toast，亦可以食名古屋名物Ebi Fry Sandwich。","day":"Not scheduled","status":"❤️ Want to Go / Itinerary Candidate","area":"📍 Osu"},{"name":"New Poppy","link":"https://www.google.com/maps/search/?api=1&query=New+Poppy","labels":["♡ Saved","📍 Endoji / Shikemichi","☕ Café","🌅 Breakfast","🍞 Ogura","🇯🇵 Nagoya Local","📸 Character","😴 Chill"],"note":"你Google Maps saved。比較有老名古屋喫茶店feel；同Day 2四間道／円頓寺route非常夾，值得優先過專程去普通連鎖coffee shop。","day":"Not scheduled","status":"♡ Saved","area":"📍 Endoji / Shikemichi"},{"name":"Coffee House KAKO","link":"https://www.google.com/maps/search/?api=1&query=Coffee+House+KAKO","labels":["♡ Saved","📍 Nagoya Station side","☕ Café","🌅 Breakfast","🍞 Ogura Toast","🇯🇵 Nagoya Local","🔥 Popular"],"note":"你Google Maps saved。Classic Nagoya morning感強，但店較細／熱門，成團6 adults + Quinn未必最舒服。小group或者有人分開行時更適合。","day":"Not scheduled","status":"♡ Saved","area":"📍 Nagoya Station side"},{"name":"Ito Coffee","link":"https://www.google.com/maps/search/?api=1&query=Ito+Coffee","labels":["♡ Saved","☕ Café","🌅 Breakfast","☕ Coffee","😴 Chill"],"note":"你Google Maps saved。Coffee / breakfast backup；如果route經過先去，唔需要專程。","day":"Not scheduled","status":"♡ Saved","area":""},{"name":"IEN Bake house","link":"https://www.google.com/maps/search/?api=1&query=IEN+Bake+house","labels":["♡ Saved / Day 3 Candidate","📍 Sakae","☕ Café","🥞 Brunch","🍳 Eggs","🍞 Bakery","👶 Quinn Friendly","👵🏻👴🏻 Parents Friendly","👨‍👩‍👧 Whole Family","🪑 Big Group","😴 Chill"],"note":"⭐ Day 3 Sakae brunch首選之一。 Modern brunch feel，bread、French toast、egg dishes比較容易滿足全家。適合大家瞓晏咗、唔想朝早趕景點。","day":"Not scheduled","status":"♡ Saved / Day 3 Candidate","area":"📍 Sakae"},{"name":"Pigment","link":"https://www.google.com/maps/search/?api=1&query=Pigment","labels":["♡ Saved / Day 3 Candidate","📍 Sakae / Nishiki","☕ Café","🥞 Brunch","🍞 French Toast","🍳 Omelette","📸 Modern","👨‍👩‍👧 Whole Family"],"note":"比較modern、靚、後生feel。哥哥／細佬／嫂嫂應該會比較鍾意。Day 3想正式食餐brunch可以揀。","day":"Not scheduled","status":"♡ Saved / Day 3 Candidate","area":"📍 Sakae / Nishiki"},{"name":"ESPRESSO D WORKS NAGOYA","link":"https://www.google.com/maps/search/?api=1&query=ESPRESSO+D+WORKS+NAGOYA","labels":["♡ Saved / Day 3 Candidate","📍 Hisaya-odori","☕ Café","🥞 Brunch","🥞 Pancakes","👶 Quinn Friendly","🌳 Park Nearby","👨‍👩‍👧 Whole Family"],"note":"Day 3 brunch option。食完可以Hisaya-odori Park散步，再決定去港區／LaLaport。","day":"Not scheduled","status":"♡ Saved / Day 3 Candidate","area":"📍 Hisaya-odori"},{"name":"Okagean Sakae Hirokoji","link":"https://www.google.com/maps/search/?api=1&query=Okagean+Sakae+Hirokoji","labels":["♡ Saved / Day 3 Candidate","📍 Sakae","☕ Café","🌅 Breakfast","🥞 Brunch","🇯🇵 Japanese Café","👵🏻👴🏻 Parents Friendly","👶 Quinn Friendly"],"note":"Komeda旗下和喫茶。比純西式brunch多日本口味，爸媽如果想食飯糰、麵、和食類會比較啱。","day":"Not scheduled","status":"♡ Saved / Day 3 Candidate","area":"📍 Sakae"},{"name":"Rassure","link":"https://www.google.com/maps/search/?api=1&query=Rassure","labels":["♡ Saved","📍 Sakae","☕ Café","🌅 Breakfast","🇯🇵 Nagoya Morning","👵🏻👴🏻 Parents Friendly","😴 Chill"],"note":"傳統Nagoya morning feel，偏爸媽向。想簡單食早餐而唔係heavy brunch可以考慮。","day":"Not scheduled","status":"♡ Saved","area":"📍 Sakae"},{"name":"Kato Coffee Sakae","link":"https://www.google.com/maps/search/?api=1&query=Kato+Coffee+Sakae","labels":["♡ Saved","📍 Sakae","☕ Café","🌅 Breakfast","🍞 Ogura Toast","🇯🇵 Nagoya Local","🔥 Popular"],"note":"比較值得試嘅Nagoya Morning，但店細＋人氣高。6 adults + Quinn唔係Day 3首選，小group先考慮。","day":"Not scheduled","status":"♡ Saved","area":"📍 Sakae"},{"name":"Blue Bottle Coffee Nagoya Sakae","link":"https://www.google.com/maps/search/?api=1&query=Blue+Bottle+Coffee+Nagoya+Sakae","labels":["♡ Saved / Easy Backup","📍 Hotel Building","☕ Café","🌅 Breakfast","⚡ Quick Stop","😴 Chill","🏨 Near Hotel","🔄 Backup"],"note":"最方便嘅「今日大家唔想諗」option。酒店Chunichi Building落樓就可以解決coffee/light breakfast。","day":"Not scheduled","status":"♡ Saved / Easy Backup","area":"📍 Hotel Building"},{"name":"Eggs 'n Things NAGOYA","link":"https://www.google.com/maps/search/?api=1&query=Eggs+%27n+Things+NAGOYA","labels":["♡ Saved","📍 Sakae / PARCO","☕ Café","🥞 Brunch","🥞 Pancakes","👶 Quinn Friendly","👨‍👩‍👧 Whole Family"],"note":"容易食、family friendly，但唔算特別Nagoya。主要係想食舒服西式brunch時嘅backup。","day":"Not scheduled","status":"♡ Saved","area":"📍 Sakae / PARCO"},{"name":"Komeda Coffee","link":"https://www.google.com/maps/search/?api=1&query=Komeda+Coffee","labels":["♡ Saved","☕ Café","🌅 Breakfast","🍞 Ogura Toast","🇯🇵 Nagoya Local","👵🏻👴🏻 Parents Friendly"],"note":"名古屋經典Morning option。Day 2四間道／円頓寺早餐曾經考慮；實際揀邊間branch視route。","day":"Not scheduled","status":"♡ Saved","area":""},{"name":"JR Nagoya Takashimaya","link":"https://www.google.com/maps/search/?api=1&query=JR+Nagoya+Takashimaya","labels":["⭐ Itinerary","📍 Nagoya Station","🛍 Shopping","💄 Beauty","👩🏻 Kitty","🌧 Rainy Day","🏬 Department Store"],"note":"Day 2主要shopping stop。Beauty集中一次處理，之後唔需要特登再返Nagoya Station。","day":"Not scheduled","status":"⭐ Itinerary","area":"📍 Nagoya Station"},{"name":"CHANEL Beauty","link":"https://www.google.com/maps/search/?api=1&query=CHANEL+Beauty","labels":["⭐ Itinerary","📍 Takashimaya","💄 Beauty","👩🏻 Kitty","🛍 Shopping"],"note":"Day 2 beauty shopping target。","day":"Not scheduled","status":"⭐ Itinerary","area":"📍 Takashimaya"},{"name":"THREE","link":"https://www.google.com/maps/search/?api=1&query=THREE","labels":["⭐ Itinerary","📍 Takashimaya","💄 Beauty","🇯🇵 Japanese Beauty","👩🏻 Kitty"],"note":"Day 2一齊睇。","day":"Not scheduled","status":"⭐ Itinerary","area":"📍 Takashimaya"},{"name":"SHIRO","link":"https://www.google.com/maps/search/?api=1&query=SHIRO","labels":["⭐ Itinerary","📍 Nagoya Station","💄 Beauty","🇯🇵 Japanese Beauty","👩🏻 Kitty"],"note":"同Nagoya Station shopping一併處理；唔值得另外一日專程返去。","day":"Not scheduled","status":"⭐ Itinerary","area":"📍 Nagoya Station"},{"name":"Hakuhodo / 白鳳堂","link":"https://www.google.com/maps/search/?api=1&query=Hakuhodo+++%E7%99%BD%E9%B3%B3%E5%A0%82","labels":["⭐ Itinerary","📍 Takashimaya","💄 Beauty","🖌 Makeup Brushes","🇯🇵 Japanese","👩🏻 Kitty","🔥 Priority"],"note":"主要目的係睇日本化妝掃。Day 2 priority shopping之一。","day":"Not scheduled","status":"⭐ Itinerary","area":"📍 Takashimaya"},{"name":"mimi33","link":"https://www.google.com/maps/search/?api=1&query=mimi33","labels":["⭐ Itinerary","📍 Gate Tower Mall 3F","🛍 Shopping","💎 Accessories","👩🏻 Kitty","⚡ Quick Stop"],"note":"你後加嘅shopping target。Day 2同Takashimaya一齊做，唔需要獨立開route。","day":"Not scheduled","status":"⭐ Itinerary","area":"📍 Gate Tower Mall 3F"},{"name":"️ Risa Magli","link":"https://www.google.com/maps/search/?api=1&query=%EF%B8%8F+Risa+Magli","labels":["❤️ Want to Go","📍 Nagoya PARCO","🛍 Shopping","👗 Lingerie","👩🏻 Kitty","⚡ If Nearby","🏨 Near Hotel"],"note":"Sakae shopping target。酒店附近，利用Day 2下午或者其他返酒店空檔去，唔需要鎖死。","day":"Not scheduled","status":"❤️ Want to Go","area":"📍 Nagoya PARCO"},{"name":"️ Chiikawa Land","link":"https://www.google.com/maps/search/?api=1&query=%EF%B8%8F+Chiikawa+Land","labels":["❤️ Want to Go","📍 Nagoya PARCO","🛍 Shopping","🎀 Character","👨‍👩‍👧 Whole Family","⚡ If Nearby"],"note":"PARCO shopping時一齊睇。熱門日子要留意入場安排。","day":"Not scheduled","status":"❤️ Want to Go","area":"📍 Nagoya PARCO"},{"name":"Magical Chiikawa Store","link":"https://www.google.com/maps/search/?api=1&query=Magical+Chiikawa+Store","labels":["♡ Saved","📍 PARCO","🛍 Shopping","🎀 Character","⚡ If Nearby"],"note":"同Chiikawa shopping一齊處理，有時間先睇。","day":"Not scheduled","status":"♡ Saved","area":"📍 PARCO"},{"name":"️ Aeta","link":"https://www.google.com/maps/search/?api=1&query=%EF%B8%8F+Aeta","labels":["❤️ Want to Go","🛍 Shopping","👜 Bags","🇯🇵 Japanese Fashion","👩🏻 Kitty"],"note":"你想睇嘅日本bag brand。唔需要為單一stockist大幅改route，附近有貨先入。","day":"Not scheduled","status":"❤️ Want to Go","area":""},{"name":"Unlimited Lounge / NAGOYAFLAT","link":"https://www.google.com/maps/search/?api=1&query=Unlimited+Lounge+++NAGOYAFLAT","labels":["♡ Saved","📍 Sakae","🛍 Shopping","👜 Aeta","👩🏻 Kitty","⚡ If Nearby"],"note":"Aeta stockist候選。Sakae附近時可以睇。","day":"Not scheduled","status":"♡ Saved","area":"📍 Sakae"},{"name":"JACK IN THE BOX","link":"https://www.google.com/maps/search/?api=1&query=JACK+IN+THE+BOX","labels":["♡ Saved","📍 Osu","🛍 Shopping","👜 Aeta","👩🏻 Kitty","⚡ If Nearby"],"note":"Aeta stockist。Day 5本身去Osu，所以比專程去其他區更容易順路睇。","day":"Not scheduled","status":"♡ Saved","area":"📍 Osu"},{"name":"LACHIC","link":"https://www.google.com/maps/search/?api=1&query=LACHIC","labels":["♡ Saved","📍 Sakae","🛍 Shopping","🏬 Mall","🌧 Rainy Day","⚡ Near Hotel"],"note":"唔係must-go；酒店附近free time、落雨、等人時先行。","day":"Not scheduled","status":"♡ Saved","area":"📍 Sakae"},{"name":"Nagoya PARCO","link":"https://www.google.com/maps/search/?api=1&query=Nagoya+PARCO","labels":["♡ Saved / Shopping Hub","📍 Sakae","🛍 Shopping","👗 Fashion","🎀 Character","🌧 Rainy Day","🏨 Near Hotel"],"note":"Risa Magli＋Chiikawa集中地，所以有兩個target想去時先值得專程入。","day":"Not scheduled","status":"♡ Saved / Shopping Hub","area":"📍 Sakae"},{"name":"️ Sports Depo Flagship / Alpen NAGOYA","link":"https://www.google.com/maps/search/?api=1&query=%EF%B8%8F+Sports+Depo+Flagship+++Alpen+NAGOYA","labels":["❤️ Want to Go","📍 Sakae","🛍 Shopping","⚾ Baseball","🥎 Softball","👩🏻 Kitty","⚡ If Nearby","🏨 Near Hotel"],"note":"主要睇baseball / softball gear。因為酒店喺Sakae，最好塞入Day 2下午或者其他free time，唔需要特登犧牲半日。","day":"Not scheduled","status":"❤️ Want to Go","area":"📍 Sakae"},{"name":"LaLaport Nagoya Minato AQULS","link":"https://www.google.com/maps/search/?api=1&query=LaLaport+Nagoya+Minato+AQULS","labels":["⭐ Itinerary","📍 Minato","🛍 Shopping","👶 Kids","👨‍👩‍👧 Whole Family","🌧 Rainy Day","🍼 Baby Facilities","🛗 Stroller Friendly","🚗 Easy by Car"],"note":"Day 3全家meet-up point，大約15:45–16:00。唔只shopping，本身已經有足夠Quinn活動，所以Family Team朝早唔一定要塞景點。","day":"Not scheduled","status":"⭐ Itinerary","area":"📍 Minato"},{"name":"Akachan Honpo","link":"https://www.google.com/maps/search/?api=1&query=Akachan+Honpo","labels":["⭐ Itinerary / Priority","📍 LaLaport","🛍 Shopping","👶 Quinn","🍼 Baby","🔥 Priority"],"note":"Day 3 LaLaport主要shopping target之一。買Quinn用品。","day":"Not scheduled","status":"⭐ Itinerary / Priority","area":"📍 LaLaport"},{"name":"️ しまぐるランド みなとアクルス","link":"https://www.google.com/maps/search/?api=1&query=%EF%B8%8F+%E3%81%97%E3%81%BE%E3%81%90%E3%82%8B%E3%83%A9%E3%83%B3%E3%83%89+%E3%81%BF%E3%81%AA%E3%81%A8%E3%82%A2%E3%82%AF%E3%83%AB%E3%82%B9","labels":["❤️ Want to Go / Flexible","📍 LaLaport","👶 Kids","👶 Quinn Friendly","0–2 Years","🌧 Rainy Day","🍼 Baby Facilities","⚡ 30–60 min","💤 Flexible"],"note":"特別啱19個月Quinn嘅indoor play。唔set固定時間：Quinn醒住＋精神好就玩30–60分鐘；瞓緊就skip，大人shopping。","day":"Not scheduled","status":"❤️ Want to Go / Flexible","area":"📍 LaLaport"},{"name":"すくすくゾーン","link":"https://www.google.com/maps/search/?api=1&query=%E3%81%99%E3%81%8F%E3%81%99%E3%81%8F%E3%82%BE%E3%83%BC%E3%83%B3","labels":["♡ Saved","📍 LaLaport","👶 Kids","🆓 Free","⚡ Quick Play","☀️ Weather Dependent"],"note":"免費play option。只當bonus，天氣／開放情況適合先玩。","day":"Not scheduled","status":"♡ Saved","area":"📍 LaLaport"},{"name":"AniTouch","link":"https://www.google.com/maps/search/?api=1&query=AniTouch","labels":["♡ Saved","📍 LaLaport","👶 Kids","🐾 Animals","🌧 Rainy Day","🔄 Backup"],"note":"Indoor animal experience。如果朝早已經去水族館就完全冇必要再排。","day":"Not scheduled","status":"♡ Saved","area":"📍 LaLaport"},{"name":"TSUTAYA BOOKSTORE","link":"https://www.google.com/maps/search/?api=1&query=TSUTAYA+BOOKSTORE","labels":["♡ Saved","📍 LaLaport","📚 Books","👶 Kids","😴 Chill","🌧 Rainy Day"],"note":"Quinn攰／大人想坐下時嘅quiet option。唔係正式景點。","day":"Not scheduled","status":"♡ Saved","area":"📍 LaLaport"},{"name":"四間道 / Shikemichi","link":"https://www.google.com/maps/search/?api=1&query=%E5%9B%9B%E9%96%93%E9%81%93+++Shikemichi","labels":["⭐ Itinerary","📍 Shikemichi","⛩ Sightseeing","🇯🇵 Historic","📸 Photo","😴 Chill","👵🏻👴🏻 Parents Friendly"],"note":"Day 2 morning。重點係慢慢行＋早餐，唔係逐個景點打卡。","day":"Not scheduled","status":"⭐ Itinerary","area":"📍 Shikemichi"},{"name":"円頓寺商店街 / Endoji","link":"https://www.google.com/maps/search/?api=1&query=%E5%86%86%E9%A0%93%E5%AF%BA%E5%95%86%E5%BA%97%E8%A1%97+++Endoji","labels":["⭐ Itinerary","📍 Endoji","⛩ Sightseeing","🛍 Local Street","☕ Café","🇯🇵 Local Feel","😴 Chill"],"note":"同四間道一組，Day 2 morning。New Poppy亦可以順路配搭。","day":"Not scheduled","status":"⭐ Itinerary","area":"📍 Endoji"},{"name":"熱田神宮 / Atsuta Jingu","link":"https://www.google.com/maps/search/?api=1&query=%E7%86%B1%E7%94%B0%E7%A5%9E%E5%AE%AE+++Atsuta+Jingu","labels":["⭐ Itinerary","📍 Atsuta","⛩ Sightseeing","🇯🇵 Shrine","👵🏻👴🏻 Parents Friendly","🚗 Easy by Car","☀️ Good Weather"],"note":"Day 5 morning。約1小時已足夠，之後11:30 Okafuji。","day":"Not scheduled","status":"⭐ Itinerary","area":"📍 Atsuta"},{"name":"大須観音 / Osu Kannon","link":"https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E9%A0%88%E8%A6%B3%E9%9F%B3+++Osu+Kannon","labels":["⭐ Itinerary","📍 Osu","⛩ Sightseeing","🇯🇵 Temple","🛍 Shopping Street","📸 Photo"],"note":"Day 5 Okafuji後去，同大須商店街一齊。","day":"Not scheduled","status":"⭐ Itinerary","area":"📍 Osu"},{"name":"大須商店街","link":"https://www.google.com/maps/search/?api=1&query=%E5%A4%A7%E9%A0%88%E5%95%86%E5%BA%97%E8%A1%97","labels":["⭐ Itinerary","📍 Osu","🛍 Shopping","🍴 Food","☕ Café","🇯🇵 Local Feel","👨‍👩‍👧 Whole Family"],"note":"Day 5下午主活動。可以自由行、食小食、睇Aeta stockist，最後Konparu。","day":"Not scheduled","status":"⭐ Itinerary","area":"📍 Osu"},{"name":"名古屋港水族館","link":"https://www.google.com/maps/search/?api=1&query=%E5%90%8D%E5%8F%A4%E5%B1%8B%E6%B8%AF%E6%B0%B4%E6%97%8F%E9%A4%A8","labels":["♡ Saved / Day 3 Option","📍 Minato","⛩ Sightseeing","🐬 Aquarium","👶 Quinn Friendly","👨‍👩‍👧 Whole Family","🌧 Rainy Day","⏱ Half Day"],"note":"Day 3 Family Team最完整景點option。大家早起＋精神好先去；唔需要為咗「有景點」而趕。","day":"Not scheduled","status":"♡ Saved / Day 3 Option","area":"📍 Minato"},{"name":"Nagoya Port / Garden Pier","link":"https://www.google.com/maps/search/?api=1&query=Nagoya+Port+++Garden+Pier","labels":["♡ Saved / Day 3 Option","📍 Minato","⛩ Sightseeing","🌊 Waterfront","😴 Chill","☀️ Good Weather","👵🏻👴🏻 Parents Friendly"],"note":"比水族館自由度高。想行幾耐就幾耐，Quinn眼瞓可以即走去car nap／LaLaport。","day":"Not scheduled","status":"♡ Saved / Day 3 Option","area":"📍 Minato"},{"name":"Sea Train Land","link":"https://www.google.com/maps/search/?api=1&query=Sea+Train+Land","labels":["♡ Saved / Day 3 Option","📍 Minato","👶 Kids","🎡 Amusement","☀️ Good Weather","⚡ Flexible"],"note":"同Nagoya Port一帶順路。有精神先玩，唔需要獨立專程去。","day":"Not scheduled","status":"♡ Saved / Day 3 Option","area":"📍 Minato"},{"name":"SCMAGLEV & Railway Park / リニア・鉄道館","link":"https://www.google.com/maps/search/?api=1&query=SCMAGLEV+%26+Railway+Park+++%E3%83%AA%E3%83%8B%E3%82%A2%E3%83%BB%E9%89%84%E9%81%93%E9%A4%A8","labels":["♡ Saved / Day 3 Option","📍 Kinjo-futo","🚂 Trains","👶 Kids","🌧 Rainy Day","👨‍👩‍👧 Whole Family","⏱ 2–3 Hours"],"note":"Day 3落雨／太熱嘅室內backup。Quinn睇真火車，大人亦有嘢睇。","day":"Not scheduled","status":"♡ Saved / Day 3 Option","area":"📍 Kinjo-futo"},{"name":"白鳥庭園","link":"https://www.google.com/maps/search/?api=1&query=%E7%99%BD%E9%B3%A5%E5%BA%AD%E5%9C%92","labels":["♡ Saved / Day 3 Option","🌳 Garden","🇯🇵 Japanese","👵🏻👴🏻 Parents Friendly","😴 Chill","☀️ Good Weather","🚗 Easy by Car"],"note":"爸媽想睇日本景但唔想大型景點時幾適合。約1小時已經可以，之後Lunch → LaLaport。","day":"Not scheduled","status":"♡ Saved / Day 3 Option","area":""},{"name":"Hisaya-odori Park","link":"https://www.google.com/maps/search/?api=1&query=Hisaya-odori+Park","labels":["♡ Saved","📍 Sakae","🌳 Park","😴 Chill","☀️ Good Weather","🏨 Near Hotel","⚡ If Nearby"],"note":"唔係目的地。Brunch後／返酒店前有時間先散步。","day":"Not scheduled","status":"♡ Saved","area":"📍 Sakae"},{"name":"Oasis 21","link":"https://www.google.com/maps/search/?api=1&query=Oasis+21","labels":["♡ Saved","📍 Sakae","⛩ Sightseeing","📸 Photo","🏨 Near Hotel","⚡ Quick Stop"],"note":"酒店附近，有時間順便睇就得，已經唔係must。","day":"Not scheduled","status":"♡ Saved","area":"📍 Sakae"},{"name":"Nagoya Castle","link":"https://www.google.com/maps/search/?api=1&query=Nagoya+Castle","labels":["❌ Passed","⛩ Sightseeing","❌ Not Needed"],"note":"最初考慮過，後來決定唔需要為咗令行程「似旅行」而塞景點。","day":"Not scheduled","status":"❌ Passed","area":""},{"name":"Mitsui Outlet Park Jazz Dream Nagashima","link":"https://www.google.com/maps/search/?api=1&query=Mitsui+Outlet+Park+Jazz+Dream+Nagashima","labels":["⭐ Itinerary","📍 Nagashima","🛍 Shopping","🏬 Outlet","👨‍👩‍👧 Whole Family","🚗 Easy by Car","⏱ Half/Full Day"],"note":"Day 4 main activity。兩架車一齊去；哥哥＋細佬＋嫂嫂之後揸Car 2直接去NGO還車＋搭20:45航班，Kitty＋爸媽＋Quinn用Car 1。","day":"Not scheduled","status":"⭐ Itinerary","area":"📍 Nagashima"},{"name":"AEON Mall Tokoname","link":"https://www.google.com/maps/search/?api=1&query=AEON+Mall+Tokoname","labels":["⭐ Itinerary","📍 Tokoname","🛍 Shopping","🏬 Mall","👶 Quinn Friendly","🌧 Rainy Day","🚗 Easy by Car","✈️ Airport Day"],"note":"Day 6 checkout後第一站。唔好行太耐，因為之後仲有Costco＋Car 1 return＋16:10 flight。","day":"Not scheduled","status":"⭐ Itinerary","area":"📍 Tokoname"},{"name":"Costco Chubu Airport","link":"https://www.google.com/maps/search/?api=1&query=Costco+Chubu+Airport","labels":["⭐ Itinerary","📍 Tokoname","🛍 Shopping","🍴 Food Court","🚗 Easy by Car","✈️ Airport Day","⏰ Time Sensitive"],"note":"Day 6最後shopping＋Lunch。要控制時間，唔好用14:30 rental reservation當成可以14:30先開始還車嘅安全線。","day":"Not scheduled","status":"⭐ Itinerary","area":"📍 Tokoname"},{"name":"MIMIMONO","link":"https://www.google.com/maps/search/?api=1&query=MIMIMONO","labels":["❓ Research / Saved","🛍 Shopping","👶 Kids Fashion","🔎 Need Location"],"note":"你有興趣，但之前未搵到可靠Nagoya實體店資料。暫時保留，不為佢改route。","day":"Not scheduled","status":"❓ Research / Saved","area":""},{"name":"安城市総合運動公園ソフトボール場","link":"https://www.google.com/maps/search/?api=1&query=%E5%AE%89%E5%9F%8E%E5%B8%82%E7%B7%8F%E5%90%88%E9%81%8B%E5%8B%95%E5%85%AC%E5%9C%92%E3%82%BD%E3%83%95%E3%83%88%E3%83%9C%E3%83%BC%E3%83%AB%E5%A0%B4","labels":["⭐ Confirmed / Itinerary","📍 Anjo","🥎 Softball","👩🏻 Kitty","🚗 Car 2","📅 9/27","⏰ Time Sensitive"],"note":"9/27 13:15 Hong Kong 🇭🇰 vs Singapore 🇸🇬。Kitty自己揸Car 2去；其他屋企人用Car 1自由活動。完場後Kitty約15:00離開，約15:45–16:00 LaLaport meet family。","day":"Not scheduled","status":"⭐ Confirmed / Itinerary","area":"📍 Anjo"}];
+
+function savedKeyName(v){
+  return String(v||'').toLowerCase().replace(/[♡⭐❤️❌❓\s\/・]/g,'');
+}
+
+function mergeMasterSaved(existing,master){
+  const out=Array.isArray(existing)?existing.map(x=>({...x})):[];
+  const index=new Map(out.map((p,i)=>[savedKeyName(p.name),i]));
+
+  master.forEach(m=>{
+    const key=savedKeyName(m.name);
+    if(index.has(key)){
+      const i=index.get(key);
+      const old=out[i]||{};
+      const mergedLabels=[...(m.labels||[]),...(old.labels||[])].filter(Boolean);
+      out[i]={
+        ...m,
+        ...old,
+        name:m.name,
+        link:old.link||m.link,
+        note:old.note||m.note,
+        labels:[...new Set(mergedLabels)],
+        status:m.status,
+        area:m.area
+      };
+    }else{
+      index.set(key,out.length);
+      out.push({...m});
+    }
+  });
+  return out;
+}
+
+const existingSaved=JSON.parse(localStorage.getItem('nagoyaSaved')||'null');
+let SAVED=mergeMasterSaved(existingSaved,MASTER_SAVED_V37);
+localStorage.setItem('nagoyaSaved',JSON.stringify(SAVED));
 function persistSaved(){localStorage.setItem('nagoyaSaved',JSON.stringify(SAVED))}
 function renderSaved(){
   SAVED=SAVED.map(p=>({
@@ -1089,54 +1120,66 @@ function uniqueSavedTags(){
 }
 
 
-const savedSelectedFilters={
-  category:new Set(),
-  day:new Set(),
-  purpose:new Set()
+const savedFilterOrder=['status','category','area','when','who','situation','practical','interest'];
+const savedFilterTitles={
+  status:'Status',
+  category:'Category',
+  area:'Area',
+  when:'When',
+  who:'Who / Needs',
+  situation:'Situation',
+  practical:'Practical',
+  interest:'Interest'
 };
+const savedSelectedFilters=Object.fromEntries(savedFilterOrder.map(k=>[k,new Set()]));
 
 function savedFilterGroupFor(label){
   const s=String(label||'').toLowerCase();
-
-  if(/^day\s*[1-6]\b/.test(s) || s.includes('not scheduled') || s.includes('unscheduled')){
-    return 'day';
-  }
-
+  if(s.startsWith('📍 ')) return 'area';
   if(
-    s.includes('food') || s.includes('cafe') || s.includes('coffee') ||
-    s.includes('shopping') || s.includes('sight') || s.includes('hotel') ||
-    s.includes('baby') || s.includes('kids') || s.includes('restaurant') ||
-    s.includes('beauty') || s.includes('transport') || s.includes('activity')
-  ){
-    return 'category';
-  }
-
-  return 'purpose';
+    s.includes('confirmed / itinerary') || s.includes('itinerary') ||
+    s.includes('want to go') || s.includes('♡ saved') ||
+    s.includes('backup') || s.includes('passed') || s.includes('research')
+  ) return 'status';
+  if(
+    s.includes('breakfast') || s.includes('brunch') || s.includes('lunch') ||
+    s.includes('afternoon') || s.includes('dinner') || s.includes('evening')
+  ) return 'when';
+  if(
+    s.includes('quinn friendly') || s.includes('parents friendly') ||
+    s.includes('whole family') || s.includes('👩🏻 kitty')
+  ) return 'who';
+  if(
+    s.includes('rainy day') || s.includes('good weather') || s.includes('chill') ||
+    s.includes('nap friendly') || s.includes('quick stop') || s.includes('quick meal') ||
+    s.includes('easy by car') || s.includes('near hotel') || s.includes('airport day') ||
+    s.includes('weather dependent') || s.includes('flexible')
+  ) return 'situation';
+  if(
+    s.includes('parking') || s.includes('baby facilities') || s.includes('stroller friendly') ||
+    s.includes('big group') || s.includes('reservation') || s.includes('time sensitive') ||
+    s.includes('private room')
+  ) return 'practical';
+  if(
+    s.includes('food') || s.includes('café') || s.includes('shopping') ||
+    s.includes('beauty') || s.includes('kids') || s.includes('sightseeing') ||
+    s.includes('sports') || s.includes('softball') || s.includes('books') ||
+    s.includes('trains') || s.includes('garden') || s.includes('park') ||
+    s.includes('amusement')
+  ) return 'category';
+  return 'interest';
 }
 
 function uniqueSavedTagsByGroup(){
-  const groups={category:[],day:[],purpose:[]};
-
+  const groups=Object.fromEntries(savedFilterOrder.map(k=>[k,[]]));
   SAVED.forEach(p=>{
-    const labels=[...(p.labels||[]),p.day].filter(Boolean);
-    labels.forEach(label=>{
+    (p.labels||[]).filter(Boolean).forEach(label=>{
       const clean=String(label).trim();
-      if(!clean)return;
       const group=savedFilterGroupFor(clean);
       if(!groups[group].includes(clean)) groups[group].push(clean);
     });
   });
-
-  const dayOrder=v=>{
-    const m=String(v).match(/day\s*(\d)/i);
-    if(m)return Number(m[1]);
-    if(/unscheduled|not scheduled/i.test(v))return 99;
-    return 50;
-  };
-
-  groups.category.sort((a,b)=>a.localeCompare(b));
-  groups.day.sort((a,b)=>dayOrder(a)-dayOrder(b) || a.localeCompare(b));
-  groups.purpose.sort((a,b)=>a.localeCompare(b));
+  savedFilterOrder.forEach(group=>groups[group].sort((a,b)=>a.localeCompare(b)));
   return groups;
 }
 
@@ -1150,19 +1193,13 @@ function toggleSavedFilter(group,tag){
 function renderSavedFilterGroups(){
   const host=document.getElementById('savedFilterGroups');
   if(!host)return;
-
   const groups=uniqueSavedTagsByGroup();
-  const labels={
-    category:'Category',
-    day:'Day',
-    purpose:'Status / Purpose'
-  };
 
-  host.innerHTML=['category','day','purpose'].map(group=>{
+  host.innerHTML=savedFilterOrder.map(group=>{
     const tags=groups[group];
     if(!tags.length)return '';
     return `<div class="savedFilterGroup">
-      <div class="savedFilterLabel">${labels[group]}</div>
+      <div class="savedFilterLabel">${savedFilterTitles[group]}</div>
       <div class="savedFilterChips">
         ${tags.map(tag=>`<button class="savedMultiChip ${savedSelectedFilters[group].has(tag)?'active':''}"
           type="button" onclick="toggleSavedFilter('${group}',${JSON.stringify(tag)})">${escapeHtml(tag)}</button>`).join('')}
@@ -1184,11 +1221,11 @@ function clearSavedSearch(){
 }
 
 function savedMatchesFilters(p){
-  const labels=[...(p.labels||[]),p.day].filter(Boolean);
-
-  return ['category','day','purpose'].every(group=>{
+  const labels=(p.labels||[]).filter(Boolean);
+  return savedFilterOrder.every(group=>{
     const selected=[...savedSelectedFilters[group]];
     if(!selected.length)return true;
+    // OR within a group, AND across different groups.
     return selected.some(tag=>labels.includes(tag));
   });
 }
@@ -1483,7 +1520,53 @@ function flashSaved(id){const el=document.getElementById(id);if(!el)return;el.te
 function saveMapNote(i,v){MAP_PLACES[i].note=v;persistMapPlaces();flashSaved('mapNote'+i);}
 function saveSavedPlaceNote(i,v){SAVED[i].note=v;persistSaved();flashSaved('savedPlaceNote'+i);}
 function parseLabels(v){return v.split(',').map(x=>x.trim()).filter(Boolean).slice(0,20);}
-function openPlaceEditor(kind,index=null){const arr=kind==='map'?MAP_PLACES:SAVED;const cur=index===null?{name:'',link:'',labels:[],note:'',day:'Not scheduled'}:arr[index];placeEditKicker.textContent=kind==='map'?'MAP PLACE':'SAVED PLACE';placeEditTitle.textContent=index===null?'Add place':'Edit place';const labels=cur.labels||[cur.tag,cur.day].filter(Boolean);placeEditForm.innerHTML=`<div class="formGroup"><label>Place name</label><input id="pName" value="${escapeHtml(cur.name||'')}" placeholder="e.g. Akachan Honpo"></div><div class="formGroup"><label>Google Maps link</label><input id="pLink" value="${escapeHtml(cur.link||'')}" placeholder="https://maps.app.goo.gl/..."></div><div class="formGroup"><label>Tags <span class="note">用逗號分隔</span></label><input id="pTags" value="${escapeHtml(labels.join(', '))}" placeholder="Food, Day 2, Quinn"></div>${kind==='saved'?`<div class="formGroup"><label>Schedule</label><select id="pDay">${['Not scheduled','Day 1','Day 2','Day 3','Day 4','Day 5','Day 6'].map(d=>`<option ${cur.day===d?'selected':''}>${d}</option>`).join('')}</select></div>`:''}<div class="formGroup"><label>Notes</label><textarea id="pNote" placeholder="簡單寫低呢個地方係咩、想食/買/睇咩、注意事項等…">${escapeHtml(cur.note||'')}</textarea></div><div class="editbar"><button class="editbtn primary" type="submit">${index===null?'Add':'Save changes'}</button>${index!==null?`<button class="editbtn danger" type="button" onclick="deletePlace('${kind}',${index})">Delete</button>`:''}<button class="editbtn" type="button" onclick="placeEditBack.classList.remove('open')">Cancel</button></div>`;placeEditForm.onsubmit=(e)=>{e.preventDefault();const name=pName.value.trim(),link=pLink.value.trim(),lbl=parseLabels(pTags.value),note=pNote.value.trim();if(!name){alert('請輸入地方名稱');return}if(!link){alert('請貼上 Google Maps link');return}if(kind==='map'){const obj={name,link,labels:lbl,note,tags:categoryFromLabels(lbl)};if(index===null)MAP_PLACES.unshift(obj);else MAP_PLACES[index]=obj;persistMapPlaces();renderMapPlaces();}else{const day=pDay.value;const obj={...(index===null?{}:SAVED[index]),name,link,labels:lbl,note,day,tag:lbl[0]||'📍 Saved'};if(index===null)SAVED.unshift(obj);else SAVED[index]=obj;persistSaved();renderSaved();}placeEditBack.classList.remove('open');};placeEditBack.classList.add('open');}
+function openPlaceEditor(kind,index=null){
+  const arr=kind==='map'?MAP_PLACES:SAVED;
+  const cur=index===null?{name:'',link:'',labels:[],note:'',day:'Not scheduled'}:arr[index];
+  placeEditKicker.textContent=kind==='map'?'MAP PLACE':'SAVED PLACE';
+  placeEditTitle.textContent=index===null?'Add place':'Edit place';
+  const labels=cur.labels||[cur.tag,cur.day].filter(Boolean);
+
+  placeEditForm.innerHTML=`
+    <div class="formGroup"><label>Place name</label>
+      <input id="pName" value="${escapeHtml(cur.name||'')}" placeholder="e.g. Akachan Honpo">
+    </div>
+    <div class="formGroup"><label>Google Maps link</label>
+      <input id="pLink" value="${escapeHtml(cur.link||'')}" placeholder="https://maps.app.goo.gl/...">
+    </div>
+    <div class="formGroup"><label>Tags <span class="note">用逗號分隔；會自動分入 filter groups</span></label>
+      <input id="pTags" value="${escapeHtml(labels.join(', '))}" placeholder="♡ Saved, 📍 Sakae, ☕ Café, 👶 Quinn Friendly">
+    </div>
+    <div class="formGroup"><label>Notes</label>
+      <textarea id="pNote" placeholder="簡單寫低呢個地方係咩、想食/買/睇咩、注意事項等…">${escapeHtml(cur.note||'')}</textarea>
+    </div>
+    <div class="editbar">
+      <button class="editbtn primary" type="submit">${index===null?'Add':'Save changes'}</button>
+      ${index!==null?`<button class="editbtn danger" type="button" onclick="deletePlace('${kind}',${index})">Delete</button>`:''}
+      <button class="editbtn" type="button" onclick="placeEditBack.classList.remove('open')">Cancel</button>
+    </div>`;
+
+  placeEditForm.onsubmit=(e)=>{
+    e.preventDefault();
+    const name=pName.value.trim(),link=pLink.value.trim(),lbl=parseLabels(pTags.value),note=pNote.value.trim();
+    if(!name){alert('請輸入地方名稱');return}
+    if(!link){alert('請貼上 Google Maps link');return}
+
+    if(kind==='map'){
+      const obj={name,link,labels:lbl,note,tags:categoryFromLabels(lbl)};
+      if(index===null)MAP_PLACES.unshift(obj);else MAP_PLACES[index]=obj;
+      persistMapPlaces();renderMapPlaces();
+    }else{
+      const obj={...(index===null?{}:SAVED[index]),name,link,labels:lbl,note,day:'Not scheduled',
+        status:lbl.find(x=>savedFilterGroupFor(x)==='status')||'',
+        area:lbl.find(x=>savedFilterGroupFor(x)==='area')||''};
+      if(index===null)SAVED.unshift(obj);else SAVED[index]=obj;
+      persistSaved();renderSaved();
+    }
+    placeEditBack.classList.remove('open');
+  };
+  placeEditBack.classList.add('open');
+}
 function deletePlace(kind,index){const arr=kind==='map'?MAP_PLACES:SAVED;if(!confirm(`Delete "${arr[index].name}"?`))return;arr.splice(index,1);if(kind==='map'){persistMapPlaces();renderMapPlaces();}else{persistSaved();renderSaved();}placeEditBack.classList.remove('open');}
 
 function setupTagFilters(){ renderDynamicFilters(); applyMapSearch(); applySavedSearch(); }
