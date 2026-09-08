@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>V41 — Fixed Saved Filter Tag Interaction</title>
+<title>V42 — Selectable Saved Tags + Custom Tag Creation</title>
 <style>
 :root{
   --bg:#f7f6f2;--ink:#252525;--muted:#7b7b76;--accent:#8f4d61;--sage:#6f8374;
@@ -328,6 +328,28 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 .savedAdvancedFilters{display:grid;gap:9px;margin-top:9px}
 .savedAdvancedFilters.hidden{display:none}
 .savedFilterSummary{font-size:9px;color:var(--muted);margin-left:6px}
+
+.savedEditorTagGroups{display:grid;gap:12px;margin-top:7px}
+.savedEditorTagGroup{display:grid;gap:6px}
+.savedEditorTagLabel{font-size:9px;font-weight:900;color:var(--muted)}
+.savedEditorTagChips{display:flex;gap:6px;flex-wrap:wrap}
+.savedEditorChoice{
+  border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;
+  padding:7px 10px;font-size:9px;cursor:pointer
+}
+.savedEditorChoice.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.customTagRow{display:flex;gap:7px;margin-top:8px}
+.customTagRow input{flex:1}
+.customTagAdd{
+  border:1px solid var(--line);background:#fff;border-radius:12px;padding:0 12px;
+  font-size:10px;font-weight:800;cursor:pointer
+}
+.selectedCustomTags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.customTagPill{
+  display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fbfbf8;
+  border-radius:999px;padding:6px 8px 6px 10px;font-size:9px
+}
+.customTagPill button{border:0;background:transparent;padding:0;cursor:pointer;color:var(--muted);font-size:12px}
 </style>
 </head>
 <body>
@@ -1492,52 +1514,167 @@ function applyMapFilter(filter){document.querySelectorAll('#mapPlaceList .mapPla
 function flashSaved(id){const el=document.getElementById(id);if(!el)return;el.textContent=lang==='zh'?'已儲存 ✓':'Saved ✓';setTimeout(()=>{if(el)el.textContent='';},1000);}
 function saveMapNote(i,v){MAP_PLACES[i].note=v;persistMapPlaces();flashSaved('mapNote'+i);}
 function saveSavedPlaceNote(i,v){SAVED[i].note=v;persistSaved();flashSaved('savedPlaceNote'+i);}
-function parseLabels(v){return v.split(',').map(x=>x.trim()).filter(Boolean).slice(0,20);}
+function parseLabels(v){
+  return String(v||'').split(',').map(x=>x.trim()).filter(Boolean).slice(0,30);
+}
+
+let _savedEditorTags=[];
+
+function allPresetSavedTags(){
+  return Object.values(savedFilterOptions).flat();
+}
+
+function toggleSavedEditorTag(tag){
+  if(_savedEditorTags.includes(tag)){
+    _savedEditorTags=_savedEditorTags.filter(x=>x!==tag);
+  }else{
+    _savedEditorTags.push(tag);
+  }
+  renderSavedEditorTags();
+}
+
+function addCustomSavedTag(){
+  const input=document.getElementById('pCustomTag');
+  if(!input)return;
+  const tags=parseLabels(input.value);
+  tags.forEach(tag=>{
+    if(tag && !_savedEditorTags.includes(tag)) _savedEditorTags.push(tag);
+  });
+  input.value='';
+  renderSavedEditorTags();
+}
+
+function removeSavedEditorTag(tag){
+  _savedEditorTags=_savedEditorTags.filter(x=>x!==tag);
+  renderSavedEditorTags();
+}
+
+function renderSavedEditorTags(){
+  const host=document.getElementById('savedEditorTagHost');
+  if(!host)return;
+
+  const presetSet=new Set(allPresetSavedTags());
+  const custom=_savedEditorTags.filter(tag=>!presetSet.has(tag));
+
+  host.innerHTML=`
+    <div class="savedEditorTagGroups">
+      ${savedFilterOrder.map(group=>`
+        <div class="savedEditorTagGroup">
+          <div class="savedEditorTagLabel">${savedFilterTitles[group]}</div>
+          <div class="savedEditorTagChips">
+            ${savedFilterOptions[group].map((tag,idx)=>`
+              <button class="savedEditorChoice ${_savedEditorTags.includes(tag)?'active':''}"
+                type="button" data-editor-group="${group}" data-editor-index="${idx}">
+                ${escapeHtml(tag)}
+              </button>`).join('')}
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <div class="customTagRow">
+      <input id="pCustomTag" placeholder="Type a new tag…"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomSavedTag()}">
+      <button class="customTagAdd" type="button" onclick="addCustomSavedTag()">＋ Add tag</button>
+    </div>
+
+    ${custom.length?`
+      <div class="selectedCustomTags">
+        ${custom.map((tag,idx)=>`
+          <span class="customTagPill">${escapeHtml(tag)}
+            <button type="button" data-custom-index="${idx}" aria-label="Remove custom tag">×</button>
+          </span>`).join('')}
+      </div>`:''}
+  `;
+
+  host.querySelectorAll('.savedEditorChoice').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const group=btn.dataset.editorGroup;
+      const idx=Number(btn.dataset.editorIndex);
+      const tag=savedFilterOptions[group]?.[idx];
+      if(tag)toggleSavedEditorTag(tag);
+    });
+  });
+
+  host.querySelectorAll('[data-custom-index]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const tag=custom[Number(btn.dataset.customIndex)];
+      if(tag)removeSavedEditorTag(tag);
+    });
+  });
+}
+
 function openPlaceEditor(kind,index=null){
   const arr=kind==='map'?MAP_PLACES:SAVED;
   const cur=index===null?{name:'',link:'',labels:[],note:'',day:'Not scheduled'}:arr[index];
   placeEditKicker.textContent=kind==='map'?'MAP PLACE':'SAVED PLACE';
   placeEditTitle.textContent=index===null?'Add place':'Edit place';
-  const labels=cur.labels||[cur.tag,cur.day].filter(Boolean);
+  const labels=(cur.labels||[cur.tag,cur.day].filter(Boolean)).filter(Boolean);
 
-  placeEditForm.innerHTML=`
-    <div class="formGroup"><label>Place name</label>
-      <input id="pName" value="${escapeHtml(cur.name||'')}" placeholder="e.g. Akachan Honpo">
-    </div>
-    <div class="formGroup"><label>Google Maps link</label>
-      <input id="pLink" value="${escapeHtml(cur.link||'')}" placeholder="https://maps.app.goo.gl/...">
-    </div>
-    <div class="formGroup"><label>Tags <span class="note">用逗號分隔；會自動分入 filter groups</span></label>
-      <input id="pTags" value="${escapeHtml(labels.join(', '))}" placeholder="♡ Saved, 📍 Sakae, ☕ Café, 👶 Quinn Friendly">
-    </div>
-    <div class="formGroup"><label>Notes</label>
-      <textarea id="pNote" placeholder="簡單寫低呢個地方係咩、想食/買/睇咩、注意事項等…">${escapeHtml(cur.note||'')}</textarea>
-    </div>
-    <div class="editbar">
-      <button class="editbtn primary" type="submit">${index===null?'Add':'Save changes'}</button>
-      ${index!==null?`<button class="editbtn danger" type="button" onclick="deletePlace('${kind}',${index})">Delete</button>`:''}
-      <button class="editbtn" type="button" onclick="placeEditBack.classList.remove('open')">Cancel</button>
-    </div>`;
+  if(kind==='map'){
+    placeEditForm.innerHTML=`
+      <div class="formGroup"><label>Place name</label>
+        <input id="pName" value="${escapeHtml(cur.name||'')}" placeholder="e.g. Akachan Honpo">
+      </div>
+      <div class="formGroup"><label>Google Maps link</label>
+        <input id="pLink" value="${escapeHtml(cur.link||'')}" placeholder="https://maps.app.goo.gl/...">
+      </div>
+      <div class="formGroup"><label>Tags <span class="note">用逗號分隔</span></label>
+        <input id="pTags" value="${escapeHtml(labels.join(', '))}" placeholder="Food, Day 2, Quinn">
+      </div>
+      <div class="formGroup"><label>Notes</label>
+        <textarea id="pNote" placeholder="Your remarks…">${escapeHtml(cur.note||'')}</textarea>
+      </div>
+      <div class="editbar">
+        <button class="editbtn primary" type="submit">${index===null?'Add':'Save changes'}</button>
+        ${index!==null?`<button class="editbtn danger" type="button" onclick="deletePlace('map',${index})">Delete</button>`:''}
+        <button class="editbtn" type="button" onclick="placeEditBack.classList.remove('open')">Cancel</button>
+      </div>`;
 
-  placeEditForm.onsubmit=(e)=>{
-    e.preventDefault();
-    const name=pName.value.trim(),link=pLink.value.trim(),lbl=parseLabels(pTags.value),note=pNote.value.trim();
-    if(!name){alert('請輸入地方名稱');return}
-    if(!link){alert('請貼上 Google Maps link');return}
-
-    if(kind==='map'){
+    placeEditForm.onsubmit=(e)=>{
+      e.preventDefault();
+      const name=pName.value.trim(),link=pLink.value.trim(),lbl=parseLabels(pTags.value),note=pNote.value.trim();
+      if(!name){alert('請輸入地方名稱');return}
+      if(!link){alert('請貼上 Google Maps link');return}
       const obj={name,link,labels:lbl,note,tags:categoryFromLabels(lbl)};
       if(index===null)MAP_PLACES.unshift(obj);else MAP_PLACES[index]=obj;
-      persistMapPlaces();renderMapPlaces();
-    }else{
-      const obj={...(index===null?{}:SAVED[index]),name,link,labels:lbl,note,day:'Not scheduled',
-        status:lbl.find(x=>savedFilterGroupFor(x)==='status')||'',
-        area:lbl.find(x=>savedFilterGroupFor(x)==='area')||''};
+      persistMapPlaces();renderMapPlaces();placeEditBack.classList.remove('open');
+    };
+  }else{
+    _savedEditorTags=[...new Set(labels)];
+
+    placeEditForm.innerHTML=`
+      <div class="formGroup"><label>Place name</label>
+        <input id="pName" value="${escapeHtml(cur.name||'')}" placeholder="e.g. Akachan Honpo">
+      </div>
+      <div class="formGroup"><label>Google Maps link</label>
+        <input id="pLink" value="${escapeHtml(cur.link||'')}" placeholder="https://maps.app.goo.gl/...">
+      </div>
+      <div class="formGroup">
+        <label>Tags <span class="note">揀現有tag，或者自己新增</span></label>
+        <div id="savedEditorTagHost"></div>
+      </div>
+      <div class="formGroup"><label>Notes</label>
+        <textarea id="pNote" placeholder="簡單寫低呢個地方係咩、想食/買/睇咩、注意事項等…">${escapeHtml(cur.note||'')}</textarea>
+      </div>
+      <div class="editbar">
+        <button class="editbtn primary" type="submit">${index===null?'Add':'Save changes'}</button>
+        ${index!==null?`<button class="editbtn danger" type="button" onclick="deletePlace('saved',${index})">Delete</button>`:''}
+        <button class="editbtn" type="button" onclick="placeEditBack.classList.remove('open')">Cancel</button>
+      </div>`;
+
+    renderSavedEditorTags();
+
+    placeEditForm.onsubmit=(e)=>{
+      e.preventDefault();
+      const name=pName.value.trim(),link=pLink.value.trim(),note=pNote.value.trim();
+      if(!name){alert('請輸入地方名稱');return}
+      if(!link){alert('請貼上 Google Maps link');return}
+      const obj={...(index===null?{}:SAVED[index]),name,link,labels:[...new Set(_savedEditorTags)],note,day:'Not scheduled'};
       if(index===null)SAVED.unshift(obj);else SAVED[index]=obj;
-      persistSaved();renderSaved();
-    }
-    placeEditBack.classList.remove('open');
-  };
+      persistSaved();renderSaved();placeEditBack.classList.remove('open');
+    };
+  }
+
   placeEditBack.classList.add('open');
 }
 function deletePlace(kind,index){const arr=kind==='map'?MAP_PLACES:SAVED;if(!confirm(`Delete "${arr[index].name}"?`))return;arr.splice(index,1);if(kind==='map'){persistMapPlaces();renderMapPlaces();}else{persistSaved();renderSaved();}placeEditBack.classList.remove('open');}
