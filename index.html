@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>Nagoya Trip 2026 · v24</title>
+<title>Nagoya Trip 2026 · v26</title>
 <style>
 :root{
   --bg:#f7f6f2;--ink:#252525;--muted:#7b7b76;--accent:#8f4d61;--sage:#6f8374;
@@ -207,6 +207,24 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 }
 .placeIconBtn:hover{background:#f6f4f0}
 .placeActions.quickMoved{display:none}
+
+.moreInfoCard{position:relative}
+.moreInfoHead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.moreInfoHead>b{padding-top:5px}
+.moreQuickActions{display:flex;gap:6px;flex:0 0 auto}
+.moreIconBtn{
+  width:30px;height:30px;border:1px solid var(--line);border-radius:50%;
+  background:#fff;display:inline-flex;align-items:center;justify-content:center;
+  padding:0;font-size:14px;line-height:1;color:var(--ink);cursor:pointer
+}
+.moreIconBtn:hover{background:#f6f4f0}
+.moreEditorField{margin-top:14px}
+.moreEditorField label{display:block;font-size:10px;font-weight:800;color:var(--muted);margin-bottom:6px}
+.moreEditorField input,.moreEditorField textarea{
+  width:100%;border:1px solid var(--line);border-radius:13px;background:#fbfbf8;
+  padding:11px 12px;font:inherit;color:var(--ink);outline:none
+}
+.moreEditorField textarea{min-height:120px;resize:vertical}
 </style>
 </head>
 <body>
@@ -277,11 +295,8 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 
 <section id="more" class="hidden">
 <h2>More</h2>
-<div class="card"><b>👨‍👩‍👧‍👦 Group</b><div class="note">9/25–9/28: 6 adults + Quinn<br>9/29–9/30: 3 adults + Quinn</div></div>
-<div class="card"><b>✈️ Flights</b><div class="note">CX536 · HKG 10:10 → NGO 15:05<br>UO690 · HKG 10:50 → NGO 15:50<br>UO671 · NGO 20:45 → HKG 00:00+1<br>CX539 · NGO 16:10 → HKG 19:30</div></div>
-<div class="card"><b>🚙 Car 1 · Toyota Alphard Hybrid</b><div class="note">9/25 15:30 pickup → 9/30 by 14:30 return<br>Reservation #99920176000<br>Chubu Centrair International Airport Shop</div><div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=Toyota+Rent+a+Car+Chubu+Centrair+International+Airport+Shop','_blank')">⌖ Maps</button></div></div>
-<div class="card"><b>🚗 Car 2</b><div class="note">9/27–9/28 · Sakae附近取車 → NGO還車</div></div>
-<div class="card"><b>🏨 Hotel</b><div class="note">The Royal Park Hotel Iconic Nagoya<br>9/25–9/30: Kitty＋爸媽＋Quinn · 2 rooms + breakfast<br>9/25–9/28: 哥哥＋細佬＋嫂嫂 · 2 rooms · no breakfast</div><div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=The+Royal+Park+Hotel+Iconic+Nagoya','_blank')">⌖ Maps</button></div></div>
+
+<div id="moreInfoCards"></div>
 <h2>Confirmed Reservations</h2>
 <div class="card"><b>9/25 · 15:30</b><div class="note">🚙 Toyota Alphard Pick-up</div></div>
 <div class="card"><b>9/25 · 15:00 onward</b><div class="note">🏨 Royal Park Hotel Check-in</div></div>
@@ -291,7 +306,7 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 <div class="card"><b>9/29 · 11:30</b><div class="note">🍱 Okafuji</div></div>
 <div class="card"><b>9/30 · by 14:30</b><div class="note">🚙 Toyota Alphard Return</div></div>
 <div class="card"><b>9/30 · 16:10</b><div class="note">✈️ CX539 NGO → HKG</div></div>
-<div class="card"><b>🧳 Packing</b><div class="note">Passports · driving licence · Quinn items · stroller · carrier · chargers</div></div>
+</div>
 <div class="card"><b>⚙️ App Data</b><div class="note">你喺App入面對行程同details嘅修改會保存在呢部device/browser。</div>
 <div class="editbar"><button class="editbtn danger" type="button" onclick="if(confirm('Reset all itinerary edits to master version?')){localStorage.removeItem('nagoyaItineraryData');location.reload()}">Reset itinerary to master</button></div></div>
 </section>
@@ -1186,6 +1201,100 @@ function deletePlace(kind,index){const arr=kind==='map'?MAP_PLACES:SAVED;if(!con
 function setupTagFilters(){ renderDynamicFilters(); applyMapSearch(); applySavedSearch(); }
 
 renderSaved();renderMapPlaces();setupTagFilters();refresh();
+
+const MORE_INFO_DEFAULTS=[
+  {
+    title:"✈️ Flights",
+    note:"CX536 · HKG 10:10 → NGO 15:05\nUO690 · HKG 10:50 → NGO 15:50\nUO671 · NGO 20:45 → HKG 00:00+1\nCX539 · NGO 16:10 → HKG 19:30",
+    map:"https://www.google.com/maps/search/?api=1&query=Chubu+Centrair+International+Airport"
+  },
+  {
+    title:"🚙 Car 1 · Toyota Alphard Hybrid",
+    note:"9/25 15:30 pickup → 9/30 by 14:30 return\nReservation #99920176000\nChubu Centrair International Airport Shop",
+    map:"https://www.google.com/maps/search/?api=1&query=Toyota+Rent+a+Car+Chubu+Centrair+International+Airport+Shop"
+  },
+  {
+    title:"🚗 Car 2",
+    note:"9/27–9/28 · Sakae附近取車 → NGO還車",
+    map:"https://www.google.com/maps/search/?api=1&query=Sakae+Nagoya"
+  },
+  {
+    title:"🏨 Hotel",
+    note:"The Royal Park Hotel Iconic Nagoya\n9/25–9/30: Kitty＋爸媽＋Quinn · 2 rooms + breakfast\n9/25–9/28: 哥哥＋細佬＋嫂嫂 · 2 rooms · no breakfast",
+    map:"https://www.google.com/maps/search/?api=1&query=The+Royal+Park+Hotel+Iconic+Nagoya"
+  }
+];
+let MORE_INFO=[];
+let moreEditIndex=-1;
+
+function loadMoreInfo(){
+  try{
+    const saved=JSON.parse(localStorage.getItem('nagoyaMoreInfo')||'null');
+    MORE_INFO=Array.isArray(saved)&&saved.length===MORE_INFO_DEFAULTS.length
+      ? saved
+      : MORE_INFO_DEFAULTS.map(x=>({...x}));
+  }catch(e){
+    MORE_INFO=MORE_INFO_DEFAULTS.map(x=>({...x}));
+  }
+}
+function persistMoreInfo(){ localStorage.setItem('nagoyaMoreInfo',JSON.stringify(MORE_INFO)); }
+function renderMoreInfo(){
+  const host=document.getElementById('moreInfoCards');
+  if(!host)return;
+  host.innerHTML=MORE_INFO.map((x,i)=>`
+    <div class="card moreInfoCard">
+      <div class="moreInfoHead">
+        <b>${escapeHtml(x.title)}</b>
+        <div class="moreQuickActions">
+          <button class="moreIconBtn" type="button" title="Map" aria-label="Open in Maps" onclick="window.open('${escapeHtml(x.map)}','_blank')">⌖</button>
+          <button class="moreIconBtn" type="button" title="Edit" aria-label="Edit" onclick="openMoreEdit(${i})">✎</button>
+        </div>
+      </div>
+      <div class="note">${escapeHtml(x.note).replace(/\n/g,'<br>')}</div>
+    </div>`).join('');
+}
+function openMoreEdit(i){
+  moreEditIndex=i;
+  const x=MORE_INFO[i];
+  document.getElementById('moreEditTitle').textContent='Edit '+x.title.replace(/^[^\w\u4e00-\u9fff]+/,'');
+  document.getElementById('moreEditName').value=x.title;
+  document.getElementById('moreEditNote').value=x.note;
+  document.getElementById('moreEditMap').value=x.map||'';
+  document.getElementById('moreEditModal').classList.add('open');
+}
+function closeMoreEdit(){ document.getElementById('moreEditModal').classList.remove('open'); }
+function saveMoreEdit(){
+  if(moreEditIndex<0)return;
+  MORE_INFO[moreEditIndex]={
+    title:document.getElementById('moreEditName').value.trim()||MORE_INFO[moreEditIndex].title,
+    note:document.getElementById('moreEditNote').value.trim(),
+    map:document.getElementById('moreEditMap').value.trim()
+  };
+  persistMoreInfo();renderMoreInfo();closeMoreEdit();
+}
+
+
+document.addEventListener('DOMContentLoaded',()=>{
+  loadMoreInfo();
+  renderMoreInfo();
+});
+
 </script>
+
+<div id="moreEditModal" class="modalwrap" onclick="if(event.target===this)closeMoreEdit()">
+  <div class="modal" style="height:auto;max-height:82vh">
+    <button class="modalclose" type="button" onclick="closeMoreEdit()">×</button>
+    <div class="eyebrow">MORE</div>
+    <div class="modaltitle" id="moreEditTitle">Edit</div>
+    <div class="moreEditorField"><label>Title</label><input id="moreEditName"></div>
+    <div class="moreEditorField"><label>Details</label><textarea id="moreEditNote"></textarea></div>
+    <div class="moreEditorField"><label>Google Maps link</label><input id="moreEditMap"></div>
+    <div class="editbar" style="margin-top:18px">
+      <button class="editbtn" type="button" onclick="saveMoreEdit()">Save</button>
+      <button class="editbtn" type="button" onclick="closeMoreEdit()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
