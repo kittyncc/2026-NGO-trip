@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>Nagoya Trip 2026 · v19</title>
+<title>Nagoya Trip 2026 · v20</title>
 <style>
 :root{
   --bg:#f7f6f2;--ink:#252525;--muted:#7b7b76;--accent:#8f4d61;--sage:#6f8374;
@@ -198,7 +198,7 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 </head>
 <body>
 <main>
-<div class="top"><div class="eyebrow">D · JAPANDI MINIMAL</div><button class="lang" onclick="toggleLang()">中文 / EN</button></div>
+<button class="lang" onclick="toggleLang()">中文 / EN</button></div>
 
 <section id="today">
 <div class="hero"><div class="eyebrow">NAGOYA FAMILY TRIP</div><h1 id="heroTitle"></h1><div class="sub" id="heroSub"></div><div style="margin-top:16px;font-size:25px">🌿 ☕ ⛩️ 🥎</div></div>
@@ -466,8 +466,9 @@ async function deleteEventPhoto(id){
 }
 function photoObjectURL(blob){ return URL.createObjectURL(blob); }
 
-async function renderEventPhotos(day,event){
-  const host=document.getElementById('eventPhotosHost');
+
+async function renderEditEventPhotos(day,event){
+  const host=document.getElementById('editPhotosHost');
   if(!host) return;
   const key=photoEventKey(day,event);
   let photos=[];
@@ -482,7 +483,67 @@ async function renderEventPhotos(day,event){
     return `<div class="attachThumb" onclick="openPhotoViewer('${url}')">
       <img src="${url}" alt="${esc(p.name||'attachment')}">
       <button class="attachDelete" type="button" aria-label="Delete photo"
-        onclick="event.stopPropagation();removeEventPhoto(${day},${event},${p.id})">×</button>
+        onclick="event.stopPropagation();removeEditEventPhoto(${day},${event},${p.id})">×</button>
+    </div>`;
+  }).join('');
+
+  host.innerHTML=`
+    <div class="attachGrid">
+      ${cards}
+      ${photos.length<MAX_PHOTOS_PER_EVENT?`
+        <label class="attachAdd">
+          <span class="plus">＋</span>
+          <span>Add photo</span>
+          <input type="file" accept="image/*" multiple hidden
+            onchange="handleEditEventPhotoUpload(${day},${event},this.files);this.value=''">
+        </label>`:''}
+    </div>
+    <div class="attachHint">Booking confirmations, tickets, screenshots, parking info, etc. Photos stay on this device/browser.</div>`;
+}
+
+async function handleEditEventPhotoUpload(day,event,fileList){
+  const files=[...fileList];
+  if(!files.length) return;
+  const key=photoEventKey(day,event);
+  const existing=await getEventPhotos(key);
+  const room=Math.max(0,MAX_PHOTOS_PER_EVENT-existing.length);
+  if(room<=0){ alert(`最多 ${MAX_PHOTOS_PER_EVENT} 張相。`); return; }
+
+  for(const file of files.slice(0,room)){
+    if(!file.type.startsWith('image/')) continue;
+    if(file.size>MAX_PHOTO_BYTES){
+      alert(`${file.name} 超過 10MB，請揀細啲嘅圖片。`);
+      continue;
+    }
+    try{ await addEventPhoto(key,file); }
+    catch(e){ alert('Unable to save this photo in the browser.'); break; }
+  }
+  await renderEditEventPhotos(day,event);
+}
+
+async function removeEditEventPhoto(day,event,id){
+  if(!confirm('Delete this photo?')) return;
+  await deleteEventPhoto(id);
+  await renderEditEventPhotos(day,event);
+}
+
+async function renderEventPhotos(day,event){
+  const host=document.getElementById('eventPhotosHost');
+  if(!host) return;
+  const key=photoEventKey(day,event);
+  let photos=[];
+  try{ photos=await getEventPhotos(key); }
+  catch(e){ host.innerHTML=''; return; }
+
+  if(!photos.length){
+    host.innerHTML='';
+    return;
+  }
+
+  const cards=photos.map(p=>{
+    const url=photoObjectURL(p.blob);
+    return `<div class="attachThumb" onclick="openPhotoViewer('${url}')">
+      <img src="${url}" alt="${esc(p.name||'attachment')}">
     </div>`;
   }).join('');
 
@@ -492,17 +553,7 @@ async function renderEventPhotos(day,event){
         <b>Photos / Attachments</b>
         <span class="attachCount">${photos.length}/${MAX_PHOTOS_PER_EVENT}</span>
       </div>
-      <div class="attachGrid">
-        ${cards}
-        ${photos.length<MAX_PHOTOS_PER_EVENT?`
-          <label class="attachAdd">
-            <span class="plus">＋</span>
-            <span>Add photo</span>
-            <input type="file" accept="image/*" multiple hidden
-              onchange="handleEventPhotoUpload(${day},${event},this.files);this.value=''">
-          </label>`:''}
-      </div>
-      <div class="attachHint">Booking confirmations, tickets, screenshots, parking info, etc. Photos stay on this device/browser.</div>
+      <div class="attachGrid">${cards}</div>
     </div>`;
 }
 async function handleEventPhotoUpload(day,event,fileList){
@@ -865,6 +916,7 @@ function openAddEvent(){
       <div class="formGroup full"><label>標題 / Title</label><input id="fTitle"></div>
       <div class="formGroup full"><label>簡短描述 / Subtitle</label><input id="fSub"></div>
       <div class="formGroup full"><label>Details</label><textarea id="fDetail"></textarea></div>
+      <div class="formGroup full"><div class="modalSubtle">Save the itinerary item first, then use Edit to add confirmation photos / attachments.</div></div>
     </div>
     <div class="editbar">
       <button class="editbtn primary" type="submit">Save</button>
@@ -897,6 +949,10 @@ function openEditEvent(day,event){
       <div class="formGroup full"><label>標題 / Title</label><input id="fTitle" value="${esc(v.title)}"></div>
       <div class="formGroup full"><label>簡短描述 / Subtitle</label><input id="fSub" value="${esc(v.sub)}"></div>
       <div class="formGroup full"><label>Details</label><textarea id="fDetail">${esc(v.detail)}</textarea></div>
+      <div class="formGroup full">
+        <label>Photos / Attachments</label>
+        <div id="editPhotosHost"></div>
+      </div>
     </div>
     <div class="editbar">
       <button class="editbtn primary" type="submit">Save changes</button>
@@ -914,6 +970,7 @@ function openEditEvent(day,event){
     persistItinerary(); render(); editBack.classList.remove('open');
   };
   editBack.classList.add('open');
+  renderEditEventPhotos(day,event);
 }
 
 function deleteEvent(day,event){
