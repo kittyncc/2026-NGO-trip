@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>Nagoya Trip 2026 · v22</title>
+<title>Nagoya Trip 2026 · v23</title>
 <style>
 :root{
   --bg:#f7f6f2;--ink:#252525;--muted:#7b7b76;--accent:#8f4d61;--sage:#6f8374;
@@ -201,7 +201,7 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 </head>
 <body>
 <main>
-<button class="lang" onclick="toggleLang()">中文 / EN</button></div>
+</div>
 
 <section id="today">
 <div class="hero"><div class="eyebrow">NAGOYA FAMILY TRIP</div><h1 id="heroTitle"></h1><div class="sub" id="heroSub"></div><div style="margin-top:16px;font-size:25px">🌿 ☕ ⛩️ 🥎</div></div>
@@ -343,7 +343,7 @@ if(!validItineraryData(_savedItinerary))localStorage.setItem('nagoyaItineraryDat
 const DETAILS={"flightCX536": {"icon": "✈️", "kicker": "FLIGHT", "map": "https://www.google.com/maps/search/?api=1&query=Hong+Kong+International+Airport", "rows": [["Cathay Pacific", "CX536"], ["Route", "HKG → NGO"], ["Time", "10:10 → 15:05"]]}, "arrivalCX": {"icon": "✈️", "kicker": "ARRIVAL", "map": "https://www.google.com/maps/search/?api=1&query=Chubu+Centrair+International+Airport", "rows": [["Airport", "Chubu Centrair International Airport"], ["Arrival", "NGO"], ["Plan", "Immigration → luggage → meet younger brother"]]}, "car1": {"icon": "🚙", "kicker": "CAR RENTAL", "map": "https://www.google.com/maps/search/?api=1&query=Toyota+Rent+a+Car+Chubu+Centrair+International+Airport+Shop", "rows": [["Toyota Rent a Car", "Chubu Centrair International Airport Shop"], ["Vehicle", "W3 Class Toyota Alphard Hybrid · Non-smoking"], ["Booking", "9/25 15:30 → 9/30 by 14:30"], ["Reservation", "99920176000"], ["Bring", "Passport + valid driving licence usable in Japan"]]}, "flightUO690": {"icon": "✈️", "kicker": "FLIGHT", "map": "https://www.google.com/maps/search/?api=1&query=Chubu+Centrair+International+Airport", "rows": [["HK Express", "UO690"], ["Route", "HKG → NGO"], ["Time", "10:50 → 15:50"]]}, "driveNGO": {"icon": "🚙", "kicker": "DRIVE", "map": "https://www.google.com/maps/dir/?api=1&origin=Chubu+Centrair+International+Airport&destination=The+Royal+Park+Hotel+Iconic+Nagoya", "rows": [["Route", "NGO → Sakae"], ["Drive time", "約50–60分鐘"]]}, "hotel": {"icon": "🏨", "kicker": "HOTEL", "map": "https://www.google.com/maps/search/?api=1&query=The+Royal+Park+Hotel+Iconic+Nagoya", "rows": [["Hotel", "The Royal Park Hotel Iconic Nagoya"], ["Address", "4-1-1 Sakae, Naka-ku, Nagoya · 中日ビル24F"], ["Rooms 9/25–30", "2 × Superior Wide Twin + breakfast"], ["Rooms 9/25–28", "2 rooms · no breakfast"], ["Parking", "Public parking ¥1,800/day · no reservation"]]}, "hotelMeet": {"icon": "♡", "kicker": "HOTEL MEET UP", "map": "https://www.google.com/maps/search/?api=1&query=The+Royal+Park+Hotel+Iconic+Nagoya", "rows": [["Meet point", "The Royal Park Hotel Iconic Nagoya"], ["Time", "約19:00"], ["Note", "哥哥＋嫂嫂由東京乘新幹線到名古屋後自行前往酒店"]]}, "freeDinner": {"icon": "🍴", "kicker": "FREE DINNER", "map": "https://www.google.com/maps/search/?api=1&query=restaurants+near+The+Royal+Park+Hotel+Iconic+Nagoya", "saved": true, "rows": [["No fixed reservation", "按Quinn狀態及大家精神決定"], ["Area", "Sakae / hotel附近"]]}, "driveShike": {"icon": "🚙", "kicker": "DRIVE", "map": "https://www.google.com/maps/dir/?api=1&origin=The+Royal+Park+Hotel+Iconic+Nagoya&destination=Shikemichi+Nagoya", "rows": [["Route", "Hotel → 四間道／円頓寺"]]}, "komeda": {"icon": "☕", "kicker": "BREAKFAST + WALK", "map": "https://www.google.com/maps/search/?api=1&query=コメダ珈琲店+円頓寺店", "rows": [["Breakfast", "Komeda Coffee 円頓寺店"], ["Address", "〒451-0042 愛知県名古屋市西区那古野1-13-8"], ["Nearby", "四間道＋円頓寺商店街"]]}, "nagoyaStation": {"icon": "🚙", "kicker": "DRIVE", "map": "https://www.google.com/maps/search/?api=1&query=Nagoya+Station", "rows": [["Destination", "Nagoya Station"], ["Plan", "Parking → shopping"]]}, "takashimaya": {"icon": "🛍️", "kicker": "SHOPPING", "map": "https://www.google.com/maps/search/?api=1&query=JR+Nagoya+Takashimaya", "rows": [["JR Nagoya Takashimaya", "CHANEL · THREE · SHIRO · Hakuhodo"], ["mimi33", "Takashimaya Gate Tower Mall 3F"]]}, "lunchTBD": {"icon": "🍳", "kicker": "LUNCH TBD", "map": "https://www.google.com/maps/search/?api=1&query=Nagoya+Station+restaurants", "saved": true, "rows": [["Candidate", "とり五鐵"], ["Candidate", "鳥開総本家"], ["Candidate", "こなな"]]}, "driveSakae": {"icon": "🚙", "kicker": "DRIVE", "map": "https://www.google.com/maps/search/?api=1&query=Sakae+Nagoya", "rows": [["Destination", "Sakae / Hotel"]]}, "sakaeFree": {"icon": "🌿", "kicker": "FREE TIME", "map": "https://www.google.com/maps/search/?api=1&query=Nagoya+PARCO", "saved": true, "rows": [["Options", "Chiikawa Land @ PARCO · Risa Magli @ PARCO · Alpen NAGOYA · LACHIC · Coffee · Hotel rest"]]}, "shige": {"icon": "🍢", "kicker": "RESERVATION", "map": "https://www.google.com/maps/search/?api=1&query=炭火焼鳥しげ+栄本店", "rows": [["Restaurant", "炭火焼鳥しげ 栄本店"], ["Time", "9/26 · 18:00"], ["Status", "Reserved"]]}, "car2": {"icon": "🚗", "kicker": "CAR 2", "map": "https://www.google.com/maps/search/?api=1&query=Sakae+Nagoya+car+rental", "rows": [["Rental", "Small car"], ["Period", "9/27–9/28"], ["Pickup", "Sakae附近"], ["Return", "NGO Airport"]]}, "driveAnjo": {"icon": "🚗", "kicker": "DRIVE", "map": "https://www.google.com/maps/dir/?api=1&origin=Sakae+Nagoya&destination=安城市総合運動公園ソフトボール場", "rows": [["Route", "Sakae → Anjo Sports Park"], ["Driver", "Kitty"]]}, "softball": {"icon": "🥎", "kicker": "SOFTBALL", "map": "https://www.google.com/maps/search/?api=1&query=安城市総合運動公園ソフトボール場", "rows": [["Match", "Hong Kong vs Singapore"], ["Start", "13:15"], ["Venue", "安城市総合運動公園ソフトボール場"]]}, "familyFree": {"icon": "🌤️", "kicker": "FAMILY FREE", "map": "https://www.google.com/maps/search/?api=1&query=Nagoya+Port", "saved": true, "rows": [["Option A", "名古屋港水族館"], ["Option B", "Garden Pier / Sea Train Land"], ["Option C", "Brunch → LaLaport"]]}, "lalaport": {"icon": "🛍️", "kicker": "MEET UP", "map": "https://www.google.com/maps/search/?api=1&query=LaLaport+Nagoya+Minato+AQULS", "rows": [["Meet", "15:45–16:00"], ["Main stop", "Akachan Honpo"], ["Purpose", "Quinn BB shopping"]]}, "bakuro": {"icon": "🥩", "kicker": "RESERVATION", "map": "https://www.google.com/maps/search/?api=1&query=飛騨牛一頭家+馬喰一代+名古屋栄", "rows": [["Restaurant", "飛騨牛一頭家 馬喰一代 名古屋栄"], ["Time", "9/27 · 18:30"], ["Room", "Private Room"], ["Status", "Reserved"]]}, "driveJazz": {"icon": "🚙", "kicker": "DRIVE", "map": "https://www.google.com/maps/dir/?api=1&origin=Sakae+Nagoya&destination=Mitsui+Outlet+Park+Jazz+Dream+Nagashima", "rows": [["Route", "Sakae → Jazz Dream Nagashima"]]}, "jazz": {"icon": "🛍️", "kicker": "OUTLET", "map": "https://www.google.com/maps/search/?api=1&query=Mitsui+Outlet+Park+Jazz+Dream+Nagashima", "rows": [["Place", "Mitsui Outlet Park Jazz Dream Nagashima"], ["Plan", "Shopping · Lunch · Coffee · Quinn nap"]]}, "depart3": {"icon": "✈️", "kicker": "DEPARTURE", "map": "https://www.google.com/maps/dir/?api=1&origin=Mitsui+Outlet+Park+Jazz+Dream+Nagashima&destination=Chubu+Centrair+International+Airport", "rows": [["Group", "哥哥＋細佬＋嫂嫂"], ["Route", "Jazz Dream → NGO"], ["Car", "Car 2 · refuel + return"]]}, "flightUO671": {"icon": "✈️", "kicker": "FLIGHT", "map": "https://www.google.com/maps/search/?api=1&query=Chubu+Centrair+International+Airport", "rows": [["HK Express", "UO671"], ["Route", "NGO → HKG"], ["Time", "20:45 → 00:00+1"]]}, "driveAtsuta": {"icon": "🚙", "kicker": "DRIVE", "map": "https://www.google.com/maps/dir/?api=1&origin=The+Royal+Park+Hotel+Iconic+Nagoya&destination=Atsuta+Jingu", "rows": [["Route", "Hotel → Atsuta Jingu"]]}, "atsuta": {"icon": "⛩️", "kicker": "SIGHTSEEING", "map": "https://www.google.com/maps/search/?api=1&query=Atsuta+Jingu", "rows": [["Place", "Atsuta Jingu"], ["Plan", "參拜＋散步＋影相"]]}, "driveOkafuji": {"icon": "🚙", "kicker": "DRIVE", "map": "https://www.google.com/maps/dir/?api=1&origin=Atsuta+Jingu&destination=鰻う+おか冨士", "rows": [["Route", "Atsuta Jingu → Okafuji"]]}, "okafuji": {"icon": "🍱", "kicker": "RESERVATION", "map": "https://www.google.com/maps/search/?api=1&query=鰻う+おか冨士", "rows": [["Restaurant", "鰻う おか冨士"], ["Time", "9/29 · 11:30"], ["Party", "3 Adults + Quinn"], ["Status", "Reserved"]]}, "nap": {"icon": "😴", "kicker": "QUINN NAP", "rows": [["Buffer", "12:30–13:30"], ["Option", "Car nap / stroller nap"]]}, "osu": {"icon": "⛩️", "kicker": "SIGHTSEEING", "map": "https://www.google.com/maps/search/?api=1&query=Osu+Kannon+Nagoya", "rows": [["Place", "大須観音"], ["Area", "大須商店街"], ["Optional", "Aeta if time"]]}, "konparu": {"icon": "☕", "kicker": "CAFE", "map": "https://www.google.com/maps/search/?api=1&query=Konparu+Osu+Honten", "rows": [["Cafe", "Konparu Osu Honten"], ["Try", "小倉多士"], ["Optional", "Ebi Fry Sandwich"]]}, "aeon": {"icon": "🛍️", "kicker": "SHOPPING", "map": "https://www.google.com/maps/search/?api=1&query=AEON+Mall+Tokoname", "rows": [["Place", "AEON Mall Tokoname"], ["Plan", "最後快速shopping"]]}, "costco": {"icon": "🛒", "kicker": "SHOPPING + LUNCH", "map": "https://www.google.com/maps/search/?api=1&query=Costco+Chubu+Airport", "rows": [["Place", "Costco Chubu Airport"], ["Plan", "Shopping + Food Court Lunch"]]}, "driveToyota": {"icon": "🚙", "kicker": "DRIVE", "map": "https://www.google.com/maps/dir/?api=1&origin=Costco+Chubu+Airport&destination=Toyota+Rent+a+Car+Chubu+Centrair+International+Airport+Shop", "rows": [["Route", "Costco → refuel → Toyota Rent a Car"]]}, "flightCX539": {"icon": "✈️", "kicker": "FLIGHT", "map": "https://www.google.com/maps/search/?api=1&query=Chubu+Centrair+International+Airport", "rows": [["Cathay Pacific", "CX539"], ["Route", "NGO → HKG"], ["Time", "16:10 → 19:30"]]}};
 let lang='zh', di=0;
 
-function D(){return DATA[lang]}
+function D(){ return DATA.zh; }
 function refresh(){
   const x=D();
   heroTitle.textContent=x.title; heroSub.textContent=x.subtitle;
@@ -352,7 +352,7 @@ function refresh(){
   render();
 }
 function render(){
-  const x=D(), d=x.days[di];
+  const x=DATA.zh, d=x.days[di];
   days.innerHTML=x.days.map((v,i)=>`<button class="pill ${i===di?'active':''}" onclick="di=${i};render()">${v.label}</button>`).join('');
   timeline.innerHTML=`<div class="dayhead"><b>${d.title}</b></div>`+
     d.events.map((v,ei)=>`<div class="eventcard" onclick="openDetail(${di},${ei})">
@@ -364,10 +364,7 @@ function render(){
       </div>
     </div>`).join('');
 }
-function toggleLang(){
-  lang=lang==='zh'?'en':'zh';
-  refresh();
-}
+
 function show(id,b){
   document.querySelectorAll('main>section').forEach(s=>s.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
@@ -688,12 +685,12 @@ function closePhotoViewer(){
 }
 
 function openDetail(day,event){
-  const v=D().days[day].events[event];
+  const v=DATA.zh.days[day].events[event];
   const baseDet=DETAILS[v.type]||{icon:"📍",kicker:"TRIP DETAIL",rows:[[v.title,v.sub]]};
   const det={...baseDet};
   if(Array.isArray(v.customRows)) det.rows=v.customRows.map(r=>[r.label,r.value]);
   if(v.customMap) det.map=v.customMap;
-  const dayLabel=D().days[day].label;
+  const dayLabel=DATA.zh.days[day].label;
   let body='', buttons='';
 
   const row=(icon,title,sub,arrow=false)=>`
@@ -990,7 +987,7 @@ function closeEditModal(e){ editBack.classList.remove('open'); }
 
 function openAddEvent(){
   editKicker.textContent='ADD ITINERARY';
-  editTitle.textContent=`${D().days[di].label}`;
+  editTitle.textContent=`${DATA.zh.days[di].label}`;
   editForm.innerHTML=`
     <div class="formGrid">
       <div class="formGroup"><label>時間 / Time</label><input id="fTime" placeholder="e.g. 15:30"></div>
