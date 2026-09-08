@@ -163,7 +163,18 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 .addFab{width:42px;height:42px;border:0;border-radius:50%;background:#222;color:#fff;font-size:22px;font-weight:700;display:grid;place-items:center;flex:0 0 auto}
 .managerIntro{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .managerIntro h2{margin-bottom:12px}
-.noteDisplay{margin-top:8px;padding-top:8px}.noteDisplay label{margin-bottom:3px}.noteText{font-size:11px;line-height:1.35;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}</style>
+.noteDisplay{margin-top:8px;padding-top:8px}.noteDisplay label{margin-bottom:3px}.noteText{font-size:11px;line-height:1.35;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}
+.searchTools{display:grid;grid-template-columns:1fr auto;gap:8px;margin:4px 0 10px}
+.searchInput{width:100%;border:1px solid var(--line);background:#fff;border-radius:14px;padding:10px 12px;font:inherit;font-size:14px;color:var(--ink);outline:none}
+.searchInput:focus{border-color:#b7beb8;box-shadow:0 0 0 3px #e8ece8}
+.tagSelect{border:1px solid var(--line);background:#fff;border-radius:14px;padding:10px 12px;font:inherit;font-size:13px;color:var(--ink);font-weight:800;min-width:118px}
+.resultCount{font-size:10px;color:var(--muted);margin:0 2px 8px}
+@media(max-width:520px){
+  .searchTools{grid-template-columns:1fr 118px}
+  .searchInput{font-size:16px}
+  .tagSelect{font-size:13px;min-width:108px}
+}
+</style>
 </head>
 <body>
 <main>
@@ -195,33 +206,38 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 
 
 <section id="map" class="hidden">
-  <div class="managerIntro"><h2>Map</h2><button class="addFab" type="button" onclick="openPlaceEditor('map')">＋</button></div>
-  <div class="filterbar" id="mapFilters">
-    <button class="filterchip active" type="button" data-filter="all">All</button>
-    <button class="filterchip" type="button" data-filter="hotel">🏨 Hotel</button>
-    <button class="filterchip" type="button" data-filter="transport">🚙 Transport</button>
-    <button class="filterchip" type="button" data-filter="food">🍴 Food</button>
-    <button class="filterchip" type="button" data-filter="shopping">🛍 Shopping</button>
-    <button class="filterchip" type="button" data-filter="sightseeing">⛩ Sightseeing</button>
-    <button class="filterchip" type="button" data-filter="baby">👶 Quinn</button>
+  <div class="managerIntro">
+    <h2>Map</h2>
+    <button class="addFab" type="button" aria-label="Add place to Map" onclick="openPlaceEditor('map')">＋</button>
   </div>
-  <div class="hint">右上角 ＋ 可人手加入 Google Maps link、tag 同 notes。</div>
+  <div class="searchTools">
+    <input id="mapSearch" class="searchInput" type="search" placeholder="Search places…" oninput="applyMapSearch()">
+    <select id="mapTagFilter" class="tagSelect" onchange="syncMapFilter(this.value)">
+      <option value="all">All tags</option>
+    </select>
+  </div>
+  <div class="filterbar" id="mapFilters"></div>
+  <div class="resultCount" id="mapResultCount"></div>
+  <div class="hint">Search 名稱／tag／notes；亦可以用 tag filter 快速篩選。</div>
   <div id="mapPlaceList"></div>
 </section>
 
 
 
 <section id="saved" class="hidden">
-  <div class="managerIntro"><h2 id="savedTitle">Saved ♡</h2><button class="addFab" type="button" onclick="openPlaceEditor('saved')">＋</button></div>
-  <div class="filterbar" id="savedFilters">
-    <button class="filterchip active" type="button" data-filter="all">All</button>
-    <button class="filterchip" type="button" data-filter="food">🍴 Food</button>
-    <button class="filterchip" type="button" data-filter="shopping">🛍 Shopping</button>
-    <button class="filterchip" type="button" data-filter="baby">👶 Quinn</button>
-    <button class="filterchip" type="button" data-filter="sightseeing">⛩ Sightseeing</button>
-    <button class="filterchip" type="button" data-filter="unscheduled">Not scheduled</button>
+  <div class="managerIntro">
+    <h2 id="savedTitle">Saved ♡</h2>
+    <button class="addFab" type="button" aria-label="Add saved place" onclick="openPlaceEditor('saved')">＋</button>
   </div>
-  <div class="hint">右上角 ＋ 可加入 Google Maps link、tag 同 notes；之後可以加落行程。</div>
+  <div class="searchTools">
+    <input id="savedSearch" class="searchInput" type="search" placeholder="Search saved places…" oninput="applySavedSearch()">
+    <select id="savedTagFilter" class="tagSelect" onchange="syncSavedFilter(this.value)">
+      <option value="all">All tags</option>
+    </select>
+  </div>
+  <div class="filterbar" id="savedFilters"></div>
+  <div class="resultCount" id="savedResultCount"></div>
+  <div class="hint">Search 名稱／tag／notes；亦可以用 tag filter 快速篩選。</div>
   <div id="savedList"></div>
 </section>
 
@@ -547,7 +563,87 @@ function addPlace(){
   const name=prompt(lang==='zh'?'呢個地方叫咩名？':'Place name?','New saved place');
   if(!name)return;
   SAVED.unshift({name,link,tag:"📍 Saved",day:"Not scheduled",note:""});
-  placeLink.value='';persistSaved();renderSaved();
+  placeLink.value='';persistSaved();
+function norm(s){ return String(s||'').toLowerCase().trim(); }
+
+function uniqueMapTags(){
+  const tags=[];
+  MAP_PLACES.forEach(p=>(p.labels||[]).forEach(t=>{ if(t && !tags.includes(t)) tags.push(t); }));
+  return tags.sort((a,b)=>a.localeCompare(b));
+}
+function uniqueSavedTags(){
+  const tags=[];
+  SAVED.forEach(p=>{
+    const labels=(p.labels||[p.tag,p.day]).filter(Boolean);
+    labels.forEach(t=>{ if(t && !tags.includes(t)) tags.push(t); });
+  });
+  return tags.sort((a,b)=>a.localeCompare(b));
+}
+
+let currentMapTag='all';
+let currentSavedTag='all';
+
+function renderDynamicFilters(){
+  const mapTags=uniqueMapTags();
+  const savedTags=uniqueSavedTags();
+
+  mapFilters.innerHTML=
+    `<button class="filterchip active" type="button" data-filter="all" onclick="syncMapFilter('all')">All</button>`+
+    mapTags.map(t=>`<button class="filterchip" type="button" data-filter="${escapeHtml(t)}" onclick="syncMapFilter(${JSON.stringify(t)})">${escapeHtml(t)}</button>`).join('');
+  mapTagFilter.innerHTML=`<option value="all">All tags</option>`+
+    mapTags.map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+
+  savedFilters.innerHTML=
+    `<button class="filterchip active" type="button" data-filter="all" onclick="syncSavedFilter('all')">All</button>`+
+    savedTags.map(t=>`<button class="filterchip" type="button" data-filter="${escapeHtml(t)}" onclick="syncSavedFilter(${JSON.stringify(t)})">${escapeHtml(t)}</button>`).join('');
+  savedTagFilter.innerHTML=`<option value="all">All tags</option>`+
+    savedTags.map(t=>`<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+}
+
+function placeHaystack(p){
+  return norm([p.name,p.note,...(p.labels||[]),p.tag,p.day].filter(Boolean).join(' '));
+}
+function hasExactLabel(p,tag){
+  if(tag==='all') return true;
+  const labels=(p.labels||[p.tag,p.day]).filter(Boolean);
+  return labels.some(x=>x===tag);
+}
+function syncMapFilter(tag){
+  currentMapTag=tag||'all';
+  if(document.getElementById('mapTagFilter')) mapTagFilter.value=currentMapTag;
+  document.querySelectorAll('#mapFilters .filterchip').forEach(b=>b.classList.toggle('active',b.dataset.filter===currentMapTag));
+  applyMapSearch();
+}
+function syncSavedFilter(tag){
+  currentSavedTag=tag||'all';
+  if(document.getElementById('savedTagFilter')) savedTagFilter.value=currentSavedTag;
+  document.querySelectorAll('#savedFilters .filterchip').forEach(b=>b.classList.toggle('active',b.dataset.filter===currentSavedTag));
+  applySavedSearch();
+}
+function applyMapSearch(){
+  const q=norm(document.getElementById('mapSearch')?.value);
+  let visible=0;
+  document.querySelectorAll('#mapPlaceList .mapPlace').forEach((card,i)=>{
+    const p=MAP_PLACES[i];
+    const show=(!q||placeHaystack(p).includes(q))&&hasExactLabel(p,currentMapTag);
+    card.classList.toggle('hiddenByTag',!show);
+    if(show) visible++;
+  });
+  if(document.getElementById('mapResultCount')) mapResultCount.textContent=`${visible} place${visible===1?'':'s'}`;
+}
+function applySavedSearch(){
+  const q=norm(document.getElementById('savedSearch')?.value);
+  let visible=0;
+  document.querySelectorAll('#savedList .savecard').forEach((card,i)=>{
+    const p=SAVED[i];
+    const show=(!q||placeHaystack(p).includes(q))&&hasExactLabel(p,currentSavedTag);
+    card.classList.toggle('hiddenByTag',!show);
+    if(show) visible++;
+  });
+  if(document.getElementById('savedResultCount')) savedResultCount.textContent=`${visible} place${visible===1?'':'s'}`;
+}
+
+renderSaved();
 }
 function assignDay(i){
   const d=prompt(lang==='zh'?'加入邊一日？輸入 1–6':'Add to which day? Enter 1–6');
@@ -718,13 +814,7 @@ function parseLabels(v){return v.split(',').map(x=>x.trim()).filter(Boolean).sli
 function openPlaceEditor(kind,index=null){const arr=kind==='map'?MAP_PLACES:SAVED;const cur=index===null?{name:'',link:'',labels:[],note:'',day:'Not scheduled'}:arr[index];placeEditKicker.textContent=kind==='map'?'MAP PLACE':'SAVED PLACE';placeEditTitle.textContent=index===null?'Add place':'Edit place';const labels=cur.labels||[cur.tag,cur.day].filter(Boolean);placeEditForm.innerHTML=`<div class="formGroup"><label>Place name</label><input id="pName" value="${escapeHtml(cur.name||'')}" placeholder="e.g. Akachan Honpo"></div><div class="formGroup"><label>Google Maps link</label><input id="pLink" value="${escapeHtml(cur.link||'')}" placeholder="https://maps.app.goo.gl/..."></div><div class="formGroup"><label>Tags <span class="note">用逗號分隔</span></label><input id="pTags" value="${escapeHtml(labels.join(', '))}" placeholder="Food, Day 2, Quinn"></div>${kind==='saved'?`<div class="formGroup"><label>Schedule</label><select id="pDay">${['Not scheduled','Day 1','Day 2','Day 3','Day 4','Day 5','Day 6'].map(d=>`<option ${cur.day===d?'selected':''}>${d}</option>`).join('')}</select></div>`:''}<div class="formGroup"><label>Notes</label><textarea id="pNote" placeholder="Your remarks…">${escapeHtml(cur.note||'')}</textarea></div><div class="editbar"><button class="editbtn primary" type="submit">${index===null?'Add':'Save changes'}</button>${index!==null?`<button class="editbtn danger" type="button" onclick="deletePlace('${kind}',${index})">Delete</button>`:''}<button class="editbtn" type="button" onclick="placeEditBack.classList.remove('open')">Cancel</button></div>`;placeEditForm.onsubmit=(e)=>{e.preventDefault();const name=pName.value.trim(),link=pLink.value.trim(),lbl=parseLabels(pTags.value),note=pNote.value.trim();if(!name){alert('請輸入地方名稱');return}if(!link){alert('請貼上 Google Maps link');return}if(kind==='map'){const obj={name,link,labels:lbl,note,tags:categoryFromLabels(lbl)};if(index===null)MAP_PLACES.unshift(obj);else MAP_PLACES[index]=obj;persistMapPlaces();renderMapPlaces();}else{const day=pDay.value;const obj={...(index===null?{}:SAVED[index]),name,link,labels:lbl,note,day,tag:lbl[0]||'📍 Saved'};if(index===null)SAVED.unshift(obj);else SAVED[index]=obj;persistSaved();renderSaved();}placeEditBack.classList.remove('open');};placeEditBack.classList.add('open');}
 function deletePlace(kind,index){const arr=kind==='map'?MAP_PLACES:SAVED;if(!confirm(`Delete "${arr[index].name}"?`))return;arr.splice(index,1);if(kind==='map'){persistMapPlaces();renderMapPlaces();}else{persistSaved();renderSaved();}placeEditBack.classList.remove('open');}
 
-function setupTagFilters(){document.querySelectorAll('#mapFilters .filterchip').forEach(btn=>{btn.onclick=()=>{document.querySelectorAll('#mapFilters .filterchip').forEach(b=>b.classList.remove('active'));btn.classList.add('active');applyMapFilter(btn.dataset.filter);};});document.querySelectorAll('#savedFilters .filterchip').forEach(btn=>{btn.onclick=()=>{document.querySelectorAll('#savedFilters .filterchip').forEach(b=>b.classList.remove('active'));btn.classList.add('active');applySavedFilter(btn.dataset.filter);};});}
-function applySavedFilter(filter){
-  document.querySelectorAll('#savedList .savecard').forEach(card=>{
-    const tags=(card.dataset.tags||'').split(/\s+/);
-    card.classList.toggle('hiddenByTag', filter!=='all' && !tags.includes(filter));
-  });
-}
+function setupTagFilters(){ renderDynamicFilters(); applyMapSearch(); applySavedSearch(); }
 
 renderSaved();renderMapPlaces();setupTagFilters();refresh();
 </script>
