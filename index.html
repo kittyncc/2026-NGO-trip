@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>V30 — Editable Event Header Title + Itinerary Drag Sort</title>
+<title>V31 — Unified Itinerary + Details Editor</title>
 <style>
 :root{
   --bg:#f7f6f2;--ink:#252525;--muted:#7b7b76;--accent:#8f4d61;--sage:#6f8374;
@@ -257,6 +257,14 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
   outline:none;border-radius:0
 }
 .editableModalTitle:focus{border-bottom-color:var(--accent)}
+
+.mergedEditSection{
+  margin-top:18px;padding-top:16px;border-top:1px solid var(--line)
+}
+.mergedEditSectionTitle{
+  font-size:11px;font-weight:900;letter-spacing:.5px;color:var(--muted);
+  text-transform:uppercase;margin-bottom:10px
+}
 </style>
 </head>
 <body>
@@ -937,7 +945,7 @@ function openDetail(day,event){
     ${body}
     ${buttons?`<div class="detailActions">${buttons}</div>`:''}
     <div class="detailActions">
-      <button class="detailBtn alt" type="button" onclick="modalback.classList.remove('open');openEditDetails(${day},${event})">✎ Edit details</button>
+      <button class="detailBtn alt" type="button" onclick="modalback.classList.remove('open');openEditEvent(${day},${event})">✎ Edit itinerary</button>
     </div>
     <div id="eventPhotosHost"></div>
     <div class="remarksBox">
@@ -1163,17 +1171,39 @@ function openAddEvent(){
 
 function openEditEvent(day,event){
   const v=DATA.zh.days[day].events[event];
+  const det=DETAILS[v.type]||{rows:[]};
+  const customRows=Array.isArray(v.customRows)
+    ? v.customRows.map(r=>({label:r.label||'',value:r.value||''}))
+    : (det.rows||[]).map(r=>({label:r[0]||'',value:r[1]||''}));
+
   editKicker.textContent='EDIT ITINERARY';
   editTitle.innerHTML=`<input id="fTitleTop" class="editableModalTitle" aria-label="Itinerary title" value="${esc(v.title)}">`;
   editForm.innerHTML=`
     <div class="formGrid">
       <div class="formGroup"><label>時間 / Time</label><input id="fTime" value="${esc(v.time)}"></div>
       <div class="formGroup"><label>類型 / Type</label><input id="fType" value="${esc(v.type)}"></div>
-      
+
       <div class="formGroup full"><label>簡短描述 / Subtitle</label><input id="fSub" value="${esc(v.sub)}"></div>
-      <div class="formGroup full"><label>Details</label><textarea id="fDetail">${esc(v.detail)}</textarea></div>
+
       <div class="formGroup full">
-        <label>Photos / Attachments</label>
+        <label>行程說明 / Description</label>
+        <textarea id="fDetail">${esc(v.detail||'')}</textarea>
+      </div>
+
+      <div class="formGroup full mergedEditSection">
+        <div class="mergedEditSectionTitle">Details</div>
+        <label>Google Maps link</label>
+        <input id="detailMap" value="${esc(v.customMap||det.map||'')}">
+      </div>
+
+      <div class="formGroup full">
+        <label>Detail rows</label>
+        <div id="rowEditor"></div>
+        <button class="editbtn" style="margin-top:8px" type="button" onclick="addDetailRow()">＋ Add detail row</button>
+      </div>
+
+      <div class="formGroup full mergedEditSection">
+        <div class="mergedEditSectionTitle">Photos / Attachments</div>
         <div id="editPhotosHost">
           <div class="attachGrid">
             <label class="attachAdd">
@@ -1187,12 +1217,18 @@ function openEditEvent(day,event){
         </div>
       </div>
     </div>
+
     <div class="editbar">
       <button class="editbtn primary" type="submit">Save changes</button>
       <button class="editbtn danger" type="button" onclick="deleteEvent(${day},${event});editBack.classList.remove('open')">Delete</button>
     </div>`;
+
+  window._editRows=customRows;
+  renderDetailRows();
+
   editForm.onsubmit=(e)=>{
     e.preventDefault();
+
     Object.assign(v,{
       time:inputVal('fTime')||'TBD',
       title:inputVal('fTitleTop')||v.title,
@@ -1200,8 +1236,18 @@ function openEditEvent(day,event){
       type:inputVal('fType')||'free',
       detail:inputVal('fDetail')
     });
-    persistItinerary(); render(); editBack.classList.remove('open');
+
+    v.customMap=inputVal('detailMap');
+    v.customRows=(window._editRows||[]).map((r,i)=>({
+      label:(document.getElementById(`rowL${i}`)?.value||'').trim(),
+      value:(document.getElementById(`rowV${i}`)?.value||'').trim()
+    })).filter(r=>r.label||r.value);
+
+    persistItinerary();
+    render();
+    editBack.classList.remove('open');
   };
+
   editBack.classList.add('open');
   renderEditEventPhotos(day,event);
 }
@@ -1234,48 +1280,7 @@ function openManageDay(){
 }
 
 function openEditDetails(day,event){
-  const v=DATA.zh.days[day].events[event];
-  const det=DETAILS[v.type]||{rows:[]};
-  const customRows=Array.isArray(v.customRows)?v.customRows:(det.rows||[]).map(r=>({label:r[0],value:r[1]}));
-  editKicker.textContent='EDIT DETAILS';
-  editTitle.textContent=v.title;
-  editForm.innerHTML=`
-    <div class="formGroup"><label>Google Maps link</label><input id="detailMap" value="${esc(v.customMap||det.map||'')}"></div>
-    <div class="formGroup"><label>Detail rows</label><div id="rowEditor"></div></div>
-    <button class="editbtn" type="button" onclick="addDetailRow()">＋ Add detail row</button>
-
-    <div class="formGroup full" style="margin-top:18px">
-      <label>Photos / Attachments</label>
-      <div id="detailEditPhotosHost">
-        <div class="attachGrid">
-          <label class="attachAdd">
-            <span class="plus">＋</span>
-            <span>Add photo</span>
-            <input type="file" accept="image/*" multiple hidden
-              onchange="handleDetailEditPhotoUpload(${day},${event},this.files);this.value=''">
-          </label>
-        </div>
-        <div class="attachHint">Booking confirmations, tickets, screenshots, parking info, etc. Photos stay on this device/browser.</div>
-      </div>
-    </div>
-
-    <div class="editbar">
-      <button class="editbtn primary" type="submit">Save details</button>
-      <button class="editbtn danger" type="button" onclick="resetCustomDetails(${day},${event})">Reset details</button>
-    </div>`;
-  window._editRows=customRows;
-  renderDetailRows();
-  renderDetailEditPhotos(day,event);
-  editForm.onsubmit=(e)=>{
-    e.preventDefault();
-    v.customMap=inputVal('detailMap');
-    v.customRows=window._editRows.map((r,i)=>({
-      label:document.getElementById(`rowL${i}`).value.trim(),
-      value:document.getElementById(`rowV${i}`).value.trim()
-    })).filter(r=>r.label||r.value);
-    persistItinerary(); editBack.classList.remove('open');
-  };
-  editBack.classList.add('open');
+  openEditEvent(day,event);
 }
 function renderDetailRows(){
   rowEditor.innerHTML=(window._editRows||[]).map((r,i)=>`
