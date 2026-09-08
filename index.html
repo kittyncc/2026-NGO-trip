@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>Nagoya Trip 2026 · v27</title>
+<title>Nagoya Trip 2026 · Itinerary Edit + Drag Sort</title>
 <style>
 :root{
   --bg:#f7f6f2;--ink:#252525;--muted:#7b7b76;--accent:#8f4d61;--sage:#6f8374;
@@ -225,6 +225,23 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
   padding:11px 12px;font:inherit;color:var(--ink);outline:none
 }
 .moreEditorField textarea{min-height:120px;resize:vertical}
+
+.tripManagerHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.tripManagerHead h2{margin:0}
+.tripManagerActions{display:flex;align-items:center;gap:7px}
+.tripTopBtn{border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:999px;padding:8px 12px;font-size:10px;font-weight:800;cursor:pointer}
+.tripTopBtn.secondary{background:#fff;color:var(--ink);border-color:var(--line)}
+.eventcard.tripEditing{grid-template-columns:25px 72px 1fr auto}
+.dragHandle{display:none;align-items:center;justify-content:center;color:#888;font-size:18px;cursor:grab;touch-action:none;user-select:none}
+.tripEditing .dragHandle{display:flex}
+.eventcard.dragging{opacity:.45}
+.eventcard.dragOver{outline:2px dashed var(--accent);outline-offset:-3px}
+.addItineraryBtn{width:100%;border:1px dashed #d7b8c2;background:#fbf0f3;color:var(--accent);border-radius:15px;padding:13px;margin-top:10px;font-weight:800;cursor:pointer}
+.editModeHint{font-size:9px;color:var(--muted);margin:8px 2px 10px}
+@media(max-width:520px){
+ .tripManagerHead{align-items:center}.tripTopBtn{padding:7px 10px}
+ .eventcard.tripEditing{grid-template-columns:22px 56px 1fr auto;gap:7px}
+}
 </style>
 </head>
 <body>
@@ -249,7 +266,13 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 </section>
 
 <section id="trip" class="hidden">
-<h2 id="tripLabel"></h2>
+<div class="tripManagerHead">
+  <h2 id="tripLabel"></h2>
+  <div class="tripManagerActions">
+    <button id="autoSortBtn" class="tripTopBtn secondary hidden" type="button" onclick="autoSortCurrentDay()">↕ Auto sort</button>
+    <button id="tripEditToggle" class="tripTopBtn" type="button" onclick="toggleTripEdit()">✎ Edit</button>
+  </div>
+</div>
 <div class="pills" id="days"></div>
 <div id="timeline"></div>
 </section>
@@ -379,15 +402,83 @@ function refresh(){
 function render(){
   const x=DATA.zh, d=x.days[di];
   days.innerHTML=x.days.map((v,i)=>`<button class="pill ${i===di?'active':''}" onclick="di=${i};render()">${v.label}</button>`).join('');
-  timeline.innerHTML=`<div class="dayhead"><b>${d.title}</b></div>`+
-    d.events.map((v,ei)=>`<div class="eventcard" onclick="openDetail(${di},${ei})">
-      <div class="time">${v.time}</div>
-      <div><b>${v.title}</b><div class="note">${v.sub}</div></div>
-      <div class="eventActions" onclick="event.stopPropagation()">
+  const rows=d.events.map((v,ei)=>`<div class="eventcard ${tripEditMode?'tripEditing':''}" draggable="${tripEditMode?'true':'false'}"
+      data-event-index="${ei}"
+      ${tripEditMode?`ondragstart="tripDragStart(event,${ei})" ondragover="tripDragOver(event,${ei})" ondrop="tripDrop(event,${ei})" ondragend="tripDragEnd(event)"`:''}
+      onclick="${tripEditMode?'':'openDetail('+di+','+ei+')'}">
+      <div class="dragHandle" title="Drag to reorder">≡</div>
+      <div class="time">${esc(v.time)}</div>
+      <div><b>${esc(v.title)}</b><div class="note">${esc(v.sub)}</div></div>
+      ${tripEditMode?`<div class="eventActions" onclick="event.stopPropagation()">
         <button class="iconBtn" type="button" aria-label="Edit" onclick="openEditEvent(${di},${ei})">✎</button>
         <button class="iconBtn" type="button" aria-label="Delete" onclick="deleteEvent(${di},${ei})">−</button>
-      </div>
+      </div>`:'<div class="chev">›</div>'}
     </div>`).join('');
+  timeline.innerHTML=`<div class="dayhead"><b>${esc(d.title)}</b></div>`+
+    (tripEditMode?`<div class="editModeHint">拖動 ≡ 可調整同一日行程次序；Auto sort 會按時間／Morning／晚上等重新排序。</div>`:'')+
+    rows+
+    (tripEditMode?`<button class="addItineraryBtn" type="button" onclick="openAddEvent()">＋ Add itinerary</button>`:'');
+  const toggle=document.getElementById('tripEditToggle');
+  const auto=document.getElementById('autoSortBtn');
+  if(toggle) toggle.textContent=tripEditMode?'✓ Done':'✎ Edit';
+  if(auto) auto.classList.toggle('hidden',!tripEditMode);
+}
+
+
+let tripEditMode=false;
+let tripDraggedIndex=null;
+
+function toggleTripEdit(){
+  tripEditMode=!tripEditMode;
+  render();
+}
+function tripDragStart(e,index){
+  if(!tripEditMode)return;
+  tripDraggedIndex=index;
+  e.dataTransfer.effectAllowed='move';
+  try{e.dataTransfer.setData('text/plain',String(index));}catch(_){}
+  requestAnimationFrame(()=>e.currentTarget.classList.add('dragging'));
+}
+function tripDragOver(e,index){
+  if(!tripEditMode)return;
+  e.preventDefault();
+  document.querySelectorAll('#timeline .eventcard').forEach(x=>x.classList.remove('dragOver'));
+  e.currentTarget.classList.add('dragOver');
+}
+function tripDrop(e,targetIndex){
+  if(!tripEditMode)return;
+  e.preventDefault();
+  const from=tripDraggedIndex;
+  if(from===null || from===targetIndex)return tripDragEnd(e);
+  const arr=DATA.zh.days[di].events;
+  const [moved]=arr.splice(from,1);
+  arr.splice(targetIndex,0,moved);
+  persistItinerary();
+  tripDraggedIndex=null;
+  render();
+}
+function tripDragEnd(e){
+  tripDraggedIndex=null;
+  document.querySelectorAll('#timeline .eventcard').forEach(x=>x.classList.remove('dragging','dragOver'));
+}
+function itinerarySortMinutes(value){
+  const s=String(value||'').trim().toLowerCase();
+  const m=s.match(/(\d{1,2}):(\d{2})/);
+  if(m) return Number(m[1])*60+Number(m[2]);
+  if(/朝早|morning|早餐|早上/.test(s)) return 8*60;
+  if(/中午|noon|lunch/.test(s)) return 12*60;
+  if(/下午|afternoon/.test(s)) return 14*60;
+  if(/傍晚|evening/.test(s)) return 18*60;
+  if(/晚上|night|dinner/.test(s)) return 20*60;
+  return 23*60+59;
+}
+function autoSortCurrentDay(){
+  const arr=DATA.zh.days[di].events;
+  const decorated=arr.map((v,i)=>({v,i,t:itinerarySortMinutes(v.time)}));
+  decorated.sort((a,b)=>a.t-b.t || a.i-b.i);
+  DATA.zh.days[di].events=decorated.map(x=>x.v);
+  persistItinerary();
+  render();
 }
 
 function show(id,b){
@@ -1012,15 +1103,17 @@ function closeEditModal(e){ editBack.classList.remove('open'); }
 
 function openAddEvent(){
   editKicker.textContent='ADD ITINERARY';
-  editTitle.textContent=`${DATA.zh.days[di].label}`;
+  editTitle.textContent='新增行程';
   editForm.innerHTML=`
     <div class="formGrid">
-      <div class="formGroup"><label>時間 / Time</label><input id="fTime" placeholder="e.g. 15:30"></div>
+      <div class="formGroup full"><label>日期 / Day</label>
+        <select id="fDay">${DATA.zh.days.map((d,i)=>`<option value="${i}" ${i===di?'selected':''}>${esc(d.label)}</option>`).join('')}</select>
+      </div>
+      <div class="formGroup"><label>時間 / Time</label><input id="fTime" placeholder="例如 10:00 / Morning / 晚上"></div>
       <div class="formGroup"><label>類型 / Type</label>
         <select id="fType">
-          <option value="free">General</option><option value="driveSakae">Drive</option>
-          <option value="restaurant">Restaurant</option><option value="shopping">Shopping</option>
-          <option value="sight">Sightseeing</option><option value="hotel">Hotel</option>
+          <option value="free">Other</option><option value="food">Food</option><option value="shopping">Shopping</option>
+          <option value="sight">Sightseeing</option><option value="transport">Transport</option><option value="hotel">Hotel</option>
           <option value="flightCX536">Flight</option><option value="nap">Nap</option>
         </select>
       </div>
@@ -1037,14 +1130,18 @@ function openAddEvent(){
     e.preventDefault();
     const title=inputVal('fTitle');
     if(!title){ alert('請輸入標題 / Please enter a title'); return; }
-    DATA.zh.days[di].events.push({
+    const targetDay=Number(document.getElementById('fDay').value);
+    DATA.zh.days[targetDay].events.push({
       time:inputVal('fTime')||'TBD',
       title,
       sub:inputVal('fSub'),
       type:document.getElementById('fType').value,
       detail:inputVal('fDetail')
     });
-    persistItinerary(); render(); editBack.classList.remove('open');
+    persistItinerary();
+    di=targetDay;
+    render();
+    editBack.classList.remove('open');
   };
   editBack.classList.add('open');
 }
