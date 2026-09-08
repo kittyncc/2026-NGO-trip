@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>Nagoya Trip 2026 · Itinerary Edit + Drag Sort</title>
+<title>Nagoya Trip 2026 · Editable Day Titles + Itinerary Drag Sort</title>
 <style>
 :root{
   --bg:#f7f6f2;--ink:#252525;--muted:#7b7b76;--accent:#8f4d61;--sage:#6f8374;
@@ -242,6 +242,13 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
  .tripManagerHead{align-items:center}.tripTopBtn{padding:7px 10px}
  .eventcard.tripEditing{grid-template-columns:22px 56px 1fr auto;gap:7px}
 }
+
+.dayheadEditable{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.dayheadEditBtn{
+  width:28px;height:28px;border:1px solid var(--line);border-radius:50%;
+  background:#fff;color:var(--ink);display:inline-flex;align-items:center;justify-content:center;
+  padding:0;font-size:13px;cursor:pointer;flex:0 0 auto
+}
 </style>
 </head>
 <body>
@@ -414,8 +421,8 @@ function render(){
         <button class="iconBtn" type="button" aria-label="Delete" onclick="deleteEvent(${di},${ei})">−</button>
       </div>`:'<div class="chev">›</div>'}
     </div>`).join('');
-  timeline.innerHTML=`<div class="dayhead"><b>${esc(d.title)}</b></div>`+
-    (tripEditMode?`<div class="editModeHint">拖動 ≡ 可調整同一日行程次序；Auto sort 會按時間／Morning／晚上等重新排序。</div>`:'')+
+  timeline.innerHTML=`<div class="dayhead ${tripEditMode?'dayheadEditable':''}"><b>${esc(d.title)}</b>${tripEditMode?`<button class="dayheadEditBtn" type="button" aria-label="Edit day title" title="Edit day title" onclick="openManageDay()">✎</button>`:''}</div>`+
+    (tripEditMode?`<div class="editModeHint">拖動 ≡ 可調整同一日行程次序；撳日標題旁 ✎ 可以改 Day tab 同當日 title；Auto sort 會按時間／Morning／晚上等重新排序。</div>`:'')+
     rows+
     (tripEditMode?`<button class="addItineraryBtn" type="button" onclick="openAddEvent()">＋ Add itinerary</button>`:'');
   const toggle=document.getElementById('tripEditToggle');
