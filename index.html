@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>Nagoya Trip 2026 · v18</title>
+<title>Nagoya Trip 2026 · v19</title>
 <style>
 :root{
   --bg:#f7f6f2;--ink:#252525;--muted:#7b7b76;--accent:#8f4d61;--sage:#6f8374;
@@ -174,6 +174,26 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
   .searchInput{font-size:16px}
   .tagSelect{font-size:13px;min-width:108px}
 }
+
+.attachSection{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+.attachHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:9px}
+.attachHead b{font-size:12px}
+.attachCount{font-size:9px;color:var(--muted)}
+.attachGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.attachThumb{position:relative;aspect-ratio:1/1;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#f0efeb;cursor:pointer}
+.attachThumb img{width:100%;height:100%;object-fit:cover;display:block}
+.attachDelete{position:absolute;top:4px;right:4px;width:22px;height:22px;border:0;border-radius:50%;background:rgba(25,25,25,.82);color:white;display:grid;place-items:center;font-size:13px;line-height:1;padding:0}
+.attachAdd{aspect-ratio:1/1;border:1px dashed #cfcac1;border-radius:12px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#555;font-size:9px;font-weight:800;cursor:pointer}
+.attachAdd .plus{font-size:24px;font-weight:400;line-height:1}
+.attachHint{font-size:9px;color:var(--muted);margin-top:8px;line-height:1.45}
+.photoViewer{position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:80;display:none;align-items:center;justify-content:center;padding:18px}
+.photoViewer.open{display:flex}
+.photoViewer img{max-width:96vw;max-height:90vh;object-fit:contain;border-radius:10px}
+.photoViewer button{position:absolute;right:18px;top:18px;width:42px;height:42px;border:0;border-radius:50%;background:#fff;color:#222;font-size:26px}
+@media(max-width:520px){
+  .attachGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+}
+
 </style>
 </head>
 <body>
@@ -291,6 +311,12 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
     <form id="editForm"></form>
   </div>
 </div>
+
+<div id="photoViewer" class="photoViewer" onclick="closePhotoViewer()">
+  <button type="button" onclick="closePhotoViewer();event.stopPropagation()">×</button>
+  <img id="photoViewerImg" alt="Attachment preview" onclick="event.stopPropagation()">
+</div>
+
 <nav>
 <button class="on" aria-label="Today" onclick="show('today',this)">
 <svg class="homefill" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/></svg><span id="navToday"></span></button>
@@ -373,6 +399,152 @@ function saveDetailRemark(day,event,value){
   }
   const count=document.getElementById('remarkCount');
   if(count) count.textContent=`${value.length}/500`;
+}
+
+
+const PHOTO_DB_NAME='nagoyaTripPhotos';
+const PHOTO_DB_VERSION=1;
+const PHOTO_STORE='eventPhotos';
+const MAX_PHOTOS_PER_EVENT=10;
+const MAX_PHOTO_BYTES=10*1024*1024;
+
+function photoEventKey(day,event){
+  const v=(DATA?.zh?.days?.[day]?.events||[])[event];
+  const dayLabel=DATA?.zh?.days?.[day]?.label||String(day);
+  return `${dayLabel}__${v?.time||''}__${v?.title||event}`;
+}
+function openPhotoDB(){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open(PHOTO_DB_NAME,PHOTO_DB_VERSION);
+    req.onupgradeneeded=()=>{
+      const db=req.result;
+      if(!db.objectStoreNames.contains(PHOTO_STORE)){
+        const s=db.createObjectStore(PHOTO_STORE,{keyPath:'id',autoIncrement:true});
+        s.createIndex('eventKey','eventKey',{unique:false});
+      }
+    };
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
+  });
+}
+async function getEventPhotos(eventKey){
+  const db=await openPhotoDB();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(PHOTO_STORE,'readonly');
+    const store=tx.objectStore(PHOTO_STORE);
+    const idx=store.index('eventKey');
+    const req=idx.getAll(eventKey);
+    req.onsuccess=()=>resolve(req.result||[]);
+    req.onerror=()=>reject(req.error);
+    tx.oncomplete=()=>db.close();
+  });
+}
+async function addEventPhoto(eventKey,file){
+  const db=await openPhotoDB();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(PHOTO_STORE,'readwrite');
+    tx.objectStore(PHOTO_STORE).add({
+      eventKey,
+      name:file.name||'photo',
+      type:file.type||'image/jpeg',
+      size:file.size||0,
+      createdAt:Date.now(),
+      blob:file
+    });
+    tx.oncomplete=()=>{db.close();resolve();};
+    tx.onerror=()=>{db.close();reject(tx.error);};
+  });
+}
+async function deleteEventPhoto(id){
+  const db=await openPhotoDB();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(PHOTO_STORE,'readwrite');
+    tx.objectStore(PHOTO_STORE).delete(id);
+    tx.oncomplete=()=>{db.close();resolve();};
+    tx.onerror=()=>{db.close();reject(tx.error);};
+  });
+}
+function photoObjectURL(blob){ return URL.createObjectURL(blob); }
+
+async function renderEventPhotos(day,event){
+  const host=document.getElementById('eventPhotosHost');
+  if(!host) return;
+  const key=photoEventKey(day,event);
+  let photos=[];
+  try{ photos=await getEventPhotos(key); }
+  catch(e){
+    host.innerHTML=`<div class="attachHint">Photos unavailable in this browser.</div>`;
+    return;
+  }
+
+  const cards=photos.map(p=>{
+    const url=photoObjectURL(p.blob);
+    return `<div class="attachThumb" onclick="openPhotoViewer('${url}')">
+      <img src="${url}" alt="${esc(p.name||'attachment')}">
+      <button class="attachDelete" type="button" aria-label="Delete photo"
+        onclick="event.stopPropagation();removeEventPhoto(${day},${event},${p.id})">×</button>
+    </div>`;
+  }).join('');
+
+  host.innerHTML=`
+    <div class="attachSection">
+      <div class="attachHead">
+        <b>Photos / Attachments</b>
+        <span class="attachCount">${photos.length}/${MAX_PHOTOS_PER_EVENT}</span>
+      </div>
+      <div class="attachGrid">
+        ${cards}
+        ${photos.length<MAX_PHOTOS_PER_EVENT?`
+          <label class="attachAdd">
+            <span class="plus">＋</span>
+            <span>Add photo</span>
+            <input type="file" accept="image/*" multiple hidden
+              onchange="handleEventPhotoUpload(${day},${event},this.files);this.value=''">
+          </label>`:''}
+      </div>
+      <div class="attachHint">Booking confirmations, tickets, screenshots, parking info, etc. Photos stay on this device/browser.</div>
+    </div>`;
+}
+async function handleEventPhotoUpload(day,event,fileList){
+  const files=[...fileList];
+  if(!files.length) return;
+  const key=photoEventKey(day,event);
+  const existing=await getEventPhotos(key);
+  const room=Math.max(0,MAX_PHOTOS_PER_EVENT-existing.length);
+  if(room<=0){ alert(`最多 ${MAX_PHOTOS_PER_EVENT} 張相。`); return; }
+
+  const selected=files.slice(0,room);
+  for(const file of selected){
+    if(!file.type.startsWith('image/')) continue;
+    if(file.size>MAX_PHOTO_BYTES){
+      alert(`${file.name} 超過 10MB，請揀細啲嘅圖片。`);
+      continue;
+    }
+    try{ await addEventPhoto(key,file); }
+    catch(e){
+      alert('Unable to save this photo in the browser.');
+      break;
+    }
+  }
+  await renderEventPhotos(day,event);
+}
+async function removeEventPhoto(day,event,id){
+  if(!confirm('Delete this photo?')) return;
+  await deleteEventPhoto(id);
+  await renderEventPhotos(day,event);
+}
+function openPhotoViewer(url){
+  const v=document.getElementById('photoViewer');
+  const img=document.getElementById('photoViewerImg');
+  if(!v||!img)return;
+  img.src=url;
+  v.classList.add('open');
+}
+function closePhotoViewer(){
+  const v=document.getElementById('photoViewer');
+  const img=document.getElementById('photoViewerImg');
+  if(v)v.classList.remove('open');
+  if(img)img.removeAttribute('src');
 }
 
 function openDetail(day,event){
@@ -499,6 +671,7 @@ function openDetail(day,event){
     <div class="detailActions">
       <button class="detailBtn alt" type="button" onclick="modalback.classList.remove('open');openEditDetails(${day},${event})">✎ Edit details</button>
     </div>
+    <div id="eventPhotosHost"></div>
     <div class="remarksBox">
       <label>📝 備註 / Remarks</label>
       <textarea maxlength="500" placeholder="${lang==='zh'?'Add your notes here…':'Add your notes here…'}"
@@ -506,6 +679,7 @@ function openDetail(day,event){
       <div class="remarksMeta"><span id="remarkSaved"></span><span id="remarkCount">${existing.length}/500</span></div>
     </div>`;
   modalback.classList.add('open');
+  renderEventPhotos(day,event);
 }
 function closeModal(e){modalback.classList.remove('open')}
 function showSavedFromModal(){
