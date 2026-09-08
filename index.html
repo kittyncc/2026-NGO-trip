@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>V40 — Updated Master Saved List + Exact Four-Filter Schema</title>
+<title>V41 — Fixed Saved Filter Tag Interaction</title>
 <style>
 :root{
   --bg:#f7f6f2;--ink:#252525;--muted:#7b7b76;--accent:#8f4d61;--sage:#6f8374;
@@ -1154,14 +1154,29 @@ function toggleSavedFilter(group,tag){
 function renderSavedFilterGroups(){
   const host=document.getElementById('savedFilterGroups');
   if(!host)return;
+
   host.innerHTML=savedFilterOrder.map(group=>`
     <div class="savedFilterGroup">
       <div class="savedFilterLabel">${savedFilterTitles[group]}</div>
       <div class="savedFilterChips">
-        ${savedFilterOptions[group].map(tag=>`<button class="savedMultiChip ${savedSelectedFilters[group].has(tag)?'active':''}"
-          type="button" onclick="toggleSavedFilter('${group}',${JSON.stringify(tag)})">${escapeHtml(tag)}</button>`).join('')}
+        ${savedFilterOptions[group].map((tag,idx)=>`
+          <button class="savedMultiChip ${savedSelectedFilters[group].has(tag)?'active':''}"
+            type="button"
+            data-filter-group="${group}"
+            data-filter-index="${idx}">
+            ${escapeHtml(tag)}
+          </button>`).join('')}
       </div>
     </div>`).join('');
+
+  host.querySelectorAll('.savedMultiChip').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const group=btn.dataset.filterGroup;
+      const index=Number(btn.dataset.filterIndex);
+      const tag=savedFilterOptions[group]?.[index];
+      if(tag) toggleSavedFilter(group,tag);
+    });
+  });
 }
 
 function clearSavedFilters(){
@@ -1236,12 +1251,15 @@ function syncMapFilter(tag){
 }
 function syncSavedFilter(tag){
   clearSavedFilters();
-  if(tag&&tag!=='all'){
-    const group=savedFilterGroupFor(tag);
-    savedSelectedFilters[group].add(tag);
-    renderSavedFilterGroups();
-    applySavedSearch();
+  if(!tag||tag==='all')return;
+  for(const group of savedFilterOrder){
+    if(savedFilterOptions[group]?.includes(tag)){
+      savedSelectedFilters[group].add(tag);
+      break;
+    }
   }
+  renderSavedFilterGroups();
+  applySavedSearch();
 }
 function applyMapSearch(){
   const q=norm(document.getElementById('mapSearch')?.value);
