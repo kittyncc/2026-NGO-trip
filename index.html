@@ -151,6 +151,18 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 .placeTags{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0 3px}
 .placeTag{display:inline-flex;align-items:center;border-radius:999px;background:var(--soft);padding:5px 8px;font-size:9px;font-weight:800;color:#4e514d}
 .mapPlace.hiddenByTag,.savecard.hiddenByTag{display:none}
+
+.placeHeader{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.placeMenu{width:30px;height:30px;border:0;background:transparent;border-radius:50%;font-size:18px;color:var(--muted)}
+.placeMenu:active{background:var(--soft)}
+.compactNotes{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.compactNotes label{display:block;font-size:10px;font-weight:800;color:var(--muted);margin-bottom:5px}
+.compactNotes textarea{width:100%;min-height:42px;max-height:72px;resize:vertical;border:1px solid var(--line);border-radius:11px;background:#fbfbf8;padding:8px 9px;font:inherit;font-size:11px;color:var(--ink);outline:none}
+.compactNotes .noteSave{font-size:9px;margin-top:4px}
+.placeActions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.addFab{width:42px;height:42px;border:0;border-radius:50%;background:#222;color:#fff;font-size:22px;font-weight:700;display:grid;place-items:center;flex:0 0 auto}
+.managerIntro{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.managerIntro h2{margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -183,135 +195,34 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 
 
 <section id="map" class="hidden">
-<h2>Map</h2>
-<div class="filterbar" id="mapFilters">
-  <button class="filterchip active" type="button" data-filter="all">All</button>
-  <button class="filterchip" type="button" data-filter="hotel">🏨 Hotel</button>
-  <button class="filterchip" type="button" data-filter="transport">🚙 Transport</button>
-  <button class="filterchip" type="button" data-filter="food">🍴 Food</button>
-  <button class="filterchip" type="button" data-filter="shopping">🛍 Shopping</button>
-  <button class="filterchip" type="button" data-filter="sightseeing">⛩ Sightseeing</button>
-  <button class="filterchip" type="button" data-filter="baby">👶 Quinn</button>
-</div>
-<div id="mapPlaceList">
-  <div class="card mapPlace" data-tags="hotel">
-    <b>🏨 The Royal Park Hotel Iconic Nagoya</b>
-    <div class="placeTags"><span class="placeTag">🏨 Hotel</span><span class="placeTag">Sakae</span></div>
-    <div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=The+Royal+Park+Hotel+Iconic+Nagoya','_blank')">⌖ Maps</button></div>
+  <div class="managerIntro"><h2>Map</h2><button class="addFab" type="button" onclick="openPlaceEditor('map')">＋</button></div>
+  <div class="filterbar" id="mapFilters">
+    <button class="filterchip active" type="button" data-filter="all">All</button>
+    <button class="filterchip" type="button" data-filter="hotel">🏨 Hotel</button>
+    <button class="filterchip" type="button" data-filter="transport">🚙 Transport</button>
+    <button class="filterchip" type="button" data-filter="food">🍴 Food</button>
+    <button class="filterchip" type="button" data-filter="shopping">🛍 Shopping</button>
+    <button class="filterchip" type="button" data-filter="sightseeing">⛩ Sightseeing</button>
+    <button class="filterchip" type="button" data-filter="baby">👶 Quinn</button>
   </div>
-  <div class="card mapPlace" data-tags="transport">
-    <b>✈️ Chubu Centrair International Airport</b>
-    <div class="placeTags"><span class="placeTag">✈️ Airport</span><span class="placeTag">Transport</span></div>
-    <div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=Chubu+Centrair+International+Airport','_blank')">⌖ Maps</button></div>
-  </div>
-  <div class="card mapPlace" data-tags="transport">
-    <b>🚙 Toyota Rent a Car · Chubu Centrair International Airport Shop</b>
-    <div class="placeTags"><span class="placeTag">🚙 Rental Car</span><span class="placeTag">Transport</span></div>
-    <div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=Toyota+Rent+a+Car+Chubu+Centrair+International+Airport+Shop','_blank')">⌖ Maps</button></div>
-  </div>
-  <div class="card mapPlace" data-tags="food sightseeing">
-    <b>☕ Komeda Coffee 円頓寺店</b>
-    <div class="placeTags"><span class="placeTag">☕ Cafe</span><span class="placeTag">🍞 Breakfast</span><span class="placeTag">Day 2</span></div>
-    <div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=コメダ珈琲店+円頓寺店','_blank')">⌖ Maps</button></div>
-  </div>
-  <div class="card mapPlace" data-tags="sightseeing">
-    <b>🏘️ 四間道</b>
-    <div class="placeTags"><span class="placeTag">🏘️ Sightseeing</span><span class="placeTag">Day 2</span></div>
-    <div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=四間道+名古屋','_blank')">⌖ Maps</button></div>
-  </div>
-  <div class="card mapPlace" data-tags="shopping">
-    <b>🛍️ JR Nagoya Takashimaya</b>
-    <div class="placeTags"><span class="placeTag">🛍 Shopping</span><span class="placeTag">Beauty</span><span class="placeTag">Day 2</span></div>
-    <div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=JR+Nagoya+Takashimaya','_blank')">⌖ Maps</button></div>
-  </div>
-  <div class="card mapPlace" data-tags="shopping">
-    <b>💎 mimi33 · Takashimaya Gate Tower Mall</b>
-    <div class="placeTags"><span class="placeTag">🛍 Shopping</span><span class="placeTag">Accessories</span><span class="placeTag">Day 2</span></div>
-    <div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=mimi33+Nagoya+Takashimaya+Gate+Tower+Mall','_blank')">⌖ Maps</button></div>
-  </div>
-  <div class="card mapPlace" data-tags="food">
-    <b>🍢 炭火焼鳥しげ 栄本店</b>
-    <div class="placeTags"><span class="placeTag">🍴 Food</span><span class="placeTag">Reserved</span><span class="placeTag">Day 2</span></div>
-    <div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=炭火焼鳥しげ+栄本店','_blank')">⌖ Maps</button></div>
-  </div>
-  <div class="card mapPlace" data-tags="sightseeing">
-    <b>🥎 安城市総合運動公園ソフトボール場</b>
-    <div class="placeTags"><span class="placeTag">🥎 Sports</span><span class="placeTag">Day 3</span></div>
-    <div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=安城市総合運動公園ソフトボール場','_blank')">⌖ Maps</button></div>
-  </div>
-  <div class="card mapPlace" data-tags="sightseeing baby">
-    <b>🐬 名古屋港水族館</b>
-    <div class="placeTags"><span class="placeTag">🐬 Sightseeing</span><span class="placeTag">👶 Quinn</span><span class="placeTag">Day 3 Option</span></div>
-    <div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=名古屋港水族館','_blank')">⌖ Maps</button></div>
-  </div>
-  <div class="card mapPlace" data-tags="shopping baby">
-    <b>🛍️ LaLaport Nagoya Minato AQULS</b>
-    <div class="placeTags"><span class="placeTag">🛍 Shopping</span><span class="placeTag">👶 Quinn</span><span class="placeTag">Day 3</span></div>
-    <div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=LaLaport+Nagoya+Minato+AQULS','_blank')">⌖ Maps</button></div>
-  </div>
-  <div class="card mapPlace" data-tags="shopping baby">
-    <b>👶 Akachan Honpo · LaLaport</b>
-    <div class="placeTags"><span class="placeTag">👶 Baby</span><span class="placeTag">🛍 Shopping</span><span class="placeTag">Day 3</span></div>
-    <div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=Akachan+Honpo+LaLaport+Nagoya+Minato+AQULS','_blank')">⌖ Maps</button></div>
-  </div>
-  <div class="card mapPlace" data-tags="food">
-    <b>🥩 馬喰一代 名古屋栄</b>
-    <div class="placeTags"><span class="placeTag">🍴 Food</span><span class="placeTag">Reserved</span><span class="placeTag">Day 3</span></div>
-    <div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=飛騨牛一頭家+馬喰一代+名古屋栄','_blank')">⌖ Maps</button></div>
-  </div>
-  <div class="card mapPlace" data-tags="shopping">
-    <b>🛍️ Jazz Dream Nagashima</b>
-    <div class="placeTags"><span class="placeTag">🛍 Shopping</span><span class="placeTag">Outlet</span><span class="placeTag">Day 4</span></div>
-    <div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=Mitsui+Outlet+Park+Jazz+Dream+Nagashima','_blank')">⌖ Maps</button></div>
-  </div>
-  <div class="card mapPlace" data-tags="sightseeing">
-    <b>⛩️ Atsuta Jingu</b>
-    <div class="placeTags"><span class="placeTag">⛩ Sightseeing</span><span class="placeTag">Day 5</span></div>
-    <div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=Atsuta+Jingu','_blank')">⌖ Maps</button></div>
-  </div>
-  <div class="card mapPlace" data-tags="food">
-    <b>🍱 鰻う おか冨士</b>
-    <div class="placeTags"><span class="placeTag">🍴 Food</span><span class="placeTag">Reserved</span><span class="placeTag">Day 5</span></div>
-    <div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=鰻う+おか冨士','_blank')">⌖ Maps</button></div>
-  </div>
-  <div class="card mapPlace" data-tags="sightseeing shopping">
-    <b>⛩️ 大須観音 / 大須商店街</b>
-    <div class="placeTags"><span class="placeTag">⛩ Sightseeing</span><span class="placeTag">🛍 Shopping</span><span class="placeTag">Day 5</span></div>
-    <div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=Osu+Kannon+Nagoya','_blank')">⌖ Maps</button></div>
-  </div>
-  <div class="card mapPlace" data-tags="food">
-    <b>☕ Konparu Osu Honten</b>
-    <div class="placeTags"><span class="placeTag">☕ Cafe</span><span class="placeTag">Day 5</span></div>
-    <div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=Konparu+Osu+Honten','_blank')">⌖ Maps</button></div>
-  </div>
-  <div class="card mapPlace" data-tags="shopping">
-    <b>🛍️ AEON Mall Tokoname</b>
-    <div class="placeTags"><span class="placeTag">🛍 Shopping</span><span class="placeTag">Day 6</span></div>
-    <div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=AEON+Mall+Tokoname','_blank')">⌖ Maps</button></div>
-  </div>
-  <div class="card mapPlace" data-tags="shopping food">
-    <b>🛒 Costco Chubu Airport</b>
-    <div class="placeTags"><span class="placeTag">🛍 Shopping</span><span class="placeTag">🍴 Food</span><span class="placeTag">Day 6</span></div>
-    <div class="actions"><button class="smallbtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=Costco+Chubu+Airport','_blank')">⌖ Maps</button></div>
-  </div>
-</div>
+  <div class="hint">右上角 ＋ 可人手加入 Google Maps link、tag 同 notes。</div>
+  <div id="mapPlaceList"></div>
 </section>
 
 
 
 <section id="saved" class="hidden">
-<h2 id="savedTitle">Saved ♡</h2>
-<div class="filterbar" id="savedFilters">
-  <button class="filterchip active" type="button" data-filter="all">All</button>
-  <button class="filterchip" type="button" data-filter="food">🍴 Food</button>
-  <button class="filterchip" type="button" data-filter="shopping">🛍 Shopping</button>
-  <button class="filterchip" type="button" data-filter="baby">👶 Quinn</button>
-  <button class="filterchip" type="button" data-filter="sightseeing">⛩ Sightseeing</button>
-  <button class="filterchip" type="button" data-filter="unscheduled">Not scheduled</button>
-</div>
-<div class="savedtop"><input id="placeLink" class="addbox" placeholder="Paste Google Maps link…"><button class="action" onclick="addPlace()">＋</button></div>
-<div class="hint">貼 Google Maps link 儲低候選地點；之後可以加到 Day 1–6。</div>
-<div id="savedList"></div>
+  <div class="managerIntro"><h2 id="savedTitle">Saved ♡</h2><button class="addFab" type="button" onclick="openPlaceEditor('saved')">＋</button></div>
+  <div class="filterbar" id="savedFilters">
+    <button class="filterchip active" type="button" data-filter="all">All</button>
+    <button class="filterchip" type="button" data-filter="food">🍴 Food</button>
+    <button class="filterchip" type="button" data-filter="shopping">🛍 Shopping</button>
+    <button class="filterchip" type="button" data-filter="baby">👶 Quinn</button>
+    <button class="filterchip" type="button" data-filter="sightseeing">⛩ Sightseeing</button>
+    <button class="filterchip" type="button" data-filter="unscheduled">Not scheduled</button>
+  </div>
+  <div class="hint">右上角 ＋ 可加入 Google Maps link、tag 同 notes；之後可以加落行程。</div>
+  <div id="savedList"></div>
 </section>
 
 
@@ -348,6 +259,14 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 </div>
 
 
+<div id="placeEditBack" class="modalback" onclick="placeEditBack.classList.remove('open')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modalclose" type="button" onclick="placeEditBack.classList.remove('open')">×</button>
+    <div class="modalkicker" id="placeEditKicker">PLACE</div>
+    <div class="modaltitle" id="placeEditTitle">Add place</div>
+    <form id="placeEditForm"></form>
+  </div>
+</div>
 <div id="editBack" class="modalback" onclick="closeEditModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
     <button class="modalclose" type="button" onclick="editBack.classList.remove('open')">×</button>
@@ -577,6 +496,22 @@ function showSavedFromModal(){
   document.querySelectorAll('nav button')[3].classList.add('on');
 }
 
+
+const DEFAULT_MAP_PLACES=[
+{name:"The Royal Park Hotel Iconic Nagoya",link:"https://www.google.com/maps/search/?api=1&query=The+Royal+Park+Hotel+Iconic+Nagoya",tags:["hotel"],labels:["🏨 Hotel","Sakae"],note:"Check-in base · 9/25–9/30"},
+{name:"Chubu Centrair International Airport",link:"https://www.google.com/maps/search/?api=1&query=Chubu+Centrair+International+Airport",tags:["transport"],labels:["✈️ Airport","Transport"],note:"NGO · Arrival / Departure"},
+{name:"Toyota Rent a Car · Chubu Centrair International Airport Shop",link:"https://www.google.com/maps/search/?api=1&query=Toyota+Rent+a+Car+Chubu+Centrair+International+Airport+Shop",tags:["transport"],labels:["🚙 Rental Car","Day 1"],note:"Pickup 9/25 15:30 · Return 9/30 by 14:30"},
+{name:"Komeda Coffee 円頓寺店",link:"https://www.google.com/maps/search/?api=1&query=コメダ珈琲店+円頓寺店",tags:["food"],labels:["☕ Cafe","Day 2"],note:"Breakfast · 小倉紅豆多士"},
+{name:"JR Nagoya Takashimaya",link:"https://www.google.com/maps/search/?api=1&query=JR+Nagoya+Takashimaya",tags:["shopping"],labels:["🛍 Shopping","Beauty","Day 2"],note:"CHANEL · THREE · SHIRO · Hakuhodo"},
+{name:"LaLaport Nagoya Minato AQULS",link:"https://www.google.com/maps/search/?api=1&query=LaLaport+Nagoya+Minato+AQULS",tags:["shopping","baby"],labels:["🛍 Shopping","👶 Quinn","Day 3"],note:"Meet-up 15:45–16:00"},
+{name:"Atsuta Jingu",link:"https://www.google.com/maps/search/?api=1&query=Atsuta+Jingu",tags:["sightseeing"],labels:["⛩ Sightseeing","Day 5"],note:"09:30–10:40"},
+{name:"鰻う おか冨士",link:"https://www.google.com/maps/search/?api=1&query=鰻う+おか冨士",tags:["food"],labels:["🍴 Food","Reserved","Day 5"],note:"Lunch 11:30 · 3 Adults + Quinn"},
+{name:"AEON Mall Tokoname",link:"https://www.google.com/maps/search/?api=1&query=AEON+Mall+Tokoname",tags:["shopping"],labels:["🛍 Shopping","Day 6"],note:"最後快速shopping"},
+{name:"Costco Chubu Airport",link:"https://www.google.com/maps/search/?api=1&query=Costco+Chubu+Airport",tags:["shopping","food"],labels:["🛍 Shopping","🍴 Food","Day 6"],note:"Shopping + Food Court Lunch"}
+];
+let MAP_PLACES=JSON.parse(localStorage.getItem('nagoyaMapPlaces')||'null')||JSON.parse(JSON.stringify(DEFAULT_MAP_PLACES));
+function persistMapPlaces(){localStorage.setItem('nagoyaMapPlaces',JSON.stringify(MAP_PLACES));}
+
 let SAVED=JSON.parse(localStorage.getItem('nagoyaSaved')||'null')||[
 {name:"鳥開総本家",link:"https://www.google.com/maps/search/?api=1&query=Torikai+Sohonten+Nagoya",tag:"🍴 Food",day:"Day 2 candidate"},
 {name:"mimi33",link:"https://www.google.com/maps/search/?api=1&query=mimi33+Nagoya",tag:"🛍 Shopping",day:"Day 2"},
@@ -585,35 +520,9 @@ let SAVED=JSON.parse(localStorage.getItem('nagoyaSaved')||'null')||[
 ];
 function persistSaved(){localStorage.setItem('nagoyaSaved',JSON.stringify(SAVED))}
 function renderSaved(){
-  SAVED = SAVED.map(p => ({...p, note: p.note || ""}));
-  savedList.innerHTML=SAVED.map((p,i)=>{
-    const raw=(p.tag||'').toLowerCase();
-    let cats=[];
-    if(raw.includes('food')||raw.includes('cafe')||raw.includes('restaurant')) cats.push('food');
-    if(raw.includes('shopping')) cats.push('shopping');
-    if(raw.includes('baby')||raw.includes('quinn')) cats.push('baby');
-    if(raw.includes('sight')) cats.push('sightseeing');
-    if((p.day||'').toLowerCase().includes('not scheduled')) cats.push('unscheduled');
-    return `<div class="savecard" data-tags="${cats.join(' ')}">
-      <b>♡ ${p.name}</b>
-      <div class="placeTags">
-        <span class="placeTag">${p.tag}</span>
-        <span class="placeTag">${p.day}</span>
-      </div>
-      <div class="savedNotes">
-        <label>${lang==='zh'?'備註 / Notes':'Notes'}</label>
-        <textarea placeholder="${lang==='zh'?'例如：想買耳環、媽媽可能唔食牛、見到有時間先去…':'e.g. buy earrings, backup lunch, only if nearby...'}"
-          oninput="saveNote(${i},this.value)">${escapeHtml(p.note)}</textarea>
-        <div class="noteSave" id="noteSaved${i}"></div>
-      </div>
-      <button class="smallbtn" onclick="window.open('${p.link}','_blank')">⌖ Maps</button>
-      <button class="smallbtn" onclick="assignDay(${i})">＋ Add to itinerary</button>
-      <button class="smallbtn" onclick="removeSaved(${i})">Remove</button>
-    </div>`;
-  }).join('');
-  applySavedFilter(document.querySelector('#savedFilters .filterchip.active')?.dataset.filter || 'all');
+  SAVED=SAVED.map(p=>({...p,note:p.note||"",labels:p.labels||[p.tag,p.day].filter(Boolean)}));
+  savedList.innerHTML=SAVED.map((p,i)=>{const raw=((p.tag||'')+' '+(p.labels||[]).join(' ')).toLowerCase();let cats=[];if(raw.includes('food')||raw.includes('cafe')||raw.includes('restaurant'))cats.push('food');if(raw.includes('shopping'))cats.push('shopping');if(raw.includes('baby')||raw.includes('quinn'))cats.push('baby');if(raw.includes('sight'))cats.push('sightseeing');if((p.day||'').toLowerCase().includes('not scheduled'))cats.push('unscheduled');const labels=(p.labels||[p.tag,p.day]).filter(Boolean);return `<div class="savecard" data-tags="${cats.join(' ')}"><div class="placeHeader"><div><b>♡ ${escapeHtml(p.name)}</b><div class="placeTags">${labels.map(x=>`<span class="placeTag">${escapeHtml(x)}</span>`).join('')}</div></div><button class="placeMenu" type="button" onclick="openPlaceEditor('saved',${i})">•••</button></div><div class="compactNotes"><label>備註 / Notes</label><textarea placeholder="Add note…" oninput="saveSavedPlaceNote(${i},this.value)">${escapeHtml(p.note)}</textarea><div class="noteSave" id="savedPlaceNote${i}"></div></div><div class="placeActions"><button class="smallbtn" onclick="window.open('${p.link}','_blank')">⌖ Maps</button><button class="smallbtn" onclick="assignDay(${i})">＋ Add to itinerary</button><button class="smallbtn" onclick="openPlaceEditor('saved',${i})">✎ Edit</button></div></div>`;}).join('');applySavedFilter(document.querySelector('#savedFilters .filterchip.active')?.dataset.filter||'all');
 }
-
 function escapeHtml(value){
   return String(value||"")
     .replaceAll("&","&amp;")
@@ -798,26 +707,18 @@ function resetCustomDetails(day,event){
 }
 
 
-function setupTagFilters(){
-  document.querySelectorAll('#mapFilters .filterchip').forEach(btn=>{
-    btn.onclick=()=>{
-      document.querySelectorAll('#mapFilters .filterchip').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      const filter=btn.dataset.filter;
-      document.querySelectorAll('.mapPlace').forEach(card=>{
-        const tags=(card.dataset.tags||'').split(/\s+/);
-        card.classList.toggle('hiddenByTag', filter!=='all' && !tags.includes(filter));
-      });
-    };
-  });
-  document.querySelectorAll('#savedFilters .filterchip').forEach(btn=>{
-    btn.onclick=()=>{
-      document.querySelectorAll('#savedFilters .filterchip').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      applySavedFilter(btn.dataset.filter);
-    };
-  });
-}
+
+function categoryFromLabels(labels=[]){const raw=labels.join(' ').toLowerCase();const tags=[];if(raw.includes('hotel'))tags.push('hotel');if(raw.includes('transport')||raw.includes('airport')||raw.includes('car'))tags.push('transport');if(raw.includes('food')||raw.includes('cafe')||raw.includes('restaurant'))tags.push('food');if(raw.includes('shopping'))tags.push('shopping');if(raw.includes('sight'))tags.push('sightseeing');if(raw.includes('baby')||raw.includes('quinn'))tags.push('baby');return [...new Set(tags)];}
+function renderMapPlaces(){mapPlaceList.innerHTML=MAP_PLACES.map((p,i)=>`<div class="card mapPlace" data-tags="${(p.tags||categoryFromLabels(p.labels||[])).join(' ')}"><div class="placeHeader"><div><b>${escapeHtml(p.name)}</b><div class="placeTags">${(p.labels||[]).map(x=>`<span class="placeTag">${escapeHtml(x)}</span>`).join('')}</div></div><button class="placeMenu" type="button" onclick="openPlaceEditor('map',${i})">•••</button></div><div class="compactNotes"><label>備註 / Notes</label><textarea placeholder="Add note…" oninput="saveMapNote(${i},this.value)">${escapeHtml(p.note||'')}</textarea><div class="noteSave" id="mapNote${i}"></div></div><div class="placeActions"><button class="smallbtn" onclick="window.open('${p.link}','_blank')">⌖ Maps</button><button class="smallbtn" onclick="openPlaceEditor('map',${i})">✎ Edit</button></div></div>`).join('');applyMapFilter(document.querySelector('#mapFilters .filterchip.active')?.dataset.filter||'all');}
+function applyMapFilter(filter){document.querySelectorAll('#mapPlaceList .mapPlace').forEach(card=>{const tags=(card.dataset.tags||'').split(/\s+/);card.classList.toggle('hiddenByTag',filter!=='all'&&!tags.includes(filter));});}
+function flashSaved(id){const el=document.getElementById(id);if(!el)return;el.textContent=lang==='zh'?'已儲存 ✓':'Saved ✓';setTimeout(()=>{if(el)el.textContent='';},1000);}
+function saveMapNote(i,v){MAP_PLACES[i].note=v;persistMapPlaces();flashSaved('mapNote'+i);}
+function saveSavedPlaceNote(i,v){SAVED[i].note=v;persistSaved();flashSaved('savedPlaceNote'+i);}
+function parseLabels(v){return v.split(',').map(x=>x.trim()).filter(Boolean).slice(0,8);}
+function openPlaceEditor(kind,index=null){const arr=kind==='map'?MAP_PLACES:SAVED;const cur=index===null?{name:'',link:'',labels:[],note:'',day:'Not scheduled'}:arr[index];placeEditKicker.textContent=kind==='map'?'MAP PLACE':'SAVED PLACE';placeEditTitle.textContent=index===null?'Add place':'Edit place';const labels=cur.labels||[cur.tag,cur.day].filter(Boolean);placeEditForm.innerHTML=`<div class="formGroup"><label>Place name</label><input id="pName" value="${escapeHtml(cur.name||'')}" placeholder="e.g. Akachan Honpo"></div><div class="formGroup"><label>Google Maps link</label><input id="pLink" value="${escapeHtml(cur.link||'')}" placeholder="https://maps.app.goo.gl/..."></div><div class="formGroup"><label>Tags <span class="note">用逗號分隔</span></label><input id="pTags" value="${escapeHtml(labels.join(', '))}" placeholder="Food, Day 2, Quinn"></div>${kind==='saved'?`<div class="formGroup"><label>Schedule</label><select id="pDay">${['Not scheduled','Day 1','Day 2','Day 3','Day 4','Day 5','Day 6'].map(d=>`<option ${cur.day===d?'selected':''}>${d}</option>`).join('')}</select></div>`:''}<div class="formGroup"><label>Notes</label><textarea id="pNote" placeholder="Your remarks…">${escapeHtml(cur.note||'')}</textarea></div><div class="editbar"><button class="editbtn primary" type="submit">${index===null?'Add':'Save changes'}</button>${index!==null?`<button class="editbtn danger" type="button" onclick="deletePlace('${kind}',${index})">Delete</button>`:''}<button class="editbtn" type="button" onclick="placeEditBack.classList.remove('open')">Cancel</button></div>`;placeEditForm.onsubmit=(e)=>{e.preventDefault();const name=pName.value.trim(),link=pLink.value.trim(),lbl=parseLabels(pTags.value),note=pNote.value.trim();if(!name){alert('請輸入地方名稱');return}if(!link){alert('請貼上 Google Maps link');return}if(kind==='map'){const obj={name,link,labels:lbl,note,tags:categoryFromLabels(lbl)};if(index===null)MAP_PLACES.unshift(obj);else MAP_PLACES[index]=obj;persistMapPlaces();renderMapPlaces();}else{const day=pDay.value;const obj={...(index===null?{}:SAVED[index]),name,link,labels:lbl,note,day,tag:lbl[0]||'📍 Saved'};if(index===null)SAVED.unshift(obj);else SAVED[index]=obj;persistSaved();renderSaved();}placeEditBack.classList.remove('open');};placeEditBack.classList.add('open');}
+function deletePlace(kind,index){const arr=kind==='map'?MAP_PLACES:SAVED;if(!confirm(`Delete "${arr[index].name}"?`))return;arr.splice(index,1);if(kind==='map'){persistMapPlaces();renderMapPlaces();}else{persistSaved();renderSaved();}placeEditBack.classList.remove('open');}
+
+function setupTagFilters(){document.querySelectorAll('#mapFilters .filterchip').forEach(btn=>{btn.onclick=()=>{document.querySelectorAll('#mapFilters .filterchip').forEach(b=>b.classList.remove('active'));btn.classList.add('active');applyMapFilter(btn.dataset.filter);};});document.querySelectorAll('#savedFilters .filterchip').forEach(btn=>{btn.onclick=()=>{document.querySelectorAll('#savedFilters .filterchip').forEach(b=>b.classList.remove('active'));btn.classList.add('active');applySavedFilter(btn.dataset.filter);};});}
 function applySavedFilter(filter){
   document.querySelectorAll('#savedList .savecard').forEach(card=>{
     const tags=(card.dataset.tags||'').split(/\s+/);
@@ -825,7 +726,7 @@ function applySavedFilter(filter){
   });
 }
 
-renderSaved();setupTagFilters();refresh();
+renderSaved();renderMapPlaces();setupTagFilters();refresh();
 </script>
 </body>
 </html>
