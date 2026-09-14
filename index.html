@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>V47 — Updated Ask ChatGPT Link</title>
+<title>V49 — Private Device-Only Ask ChatGPT Link</title>
 <style>
 :root{
   --bg:#F7F5F0;--ink:#3E3B37;--muted:#8A847C;--accent:#B96F55;--sage:#7F8B75;
@@ -499,11 +499,25 @@ nav button.on{color:#B96F55}
 </div>
 <div class="card"><b>⚙️ App Data</b><div class="note">你喺App入面對行程同details嘅修改會保存在呢部device/browser。</div>
 <div class="editbar"><button class="editbtn danger" type="button" onclick="if(confirm('Reset all itinerary edits to master version?')){localStorage.removeItem('nagoyaItineraryData');location.reload()}">Reset itinerary to master</button></div></div>
+
+<div class="card">
+  <b>✦ Ask ChatGPT Link</b>
+  <div class="note" style="margin-top:6px">呢條 link 只會儲存在你而家呢部 device / browser，唔會寫入公開嘅 index.html。</div>
+  <div style="display:grid;gap:8px;margin-top:12px">
+    <input id="chatgptLinkInput" type="url" placeholder="Paste your ChatGPT share link"
+      style="width:100%;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:11px 12px;font:inherit">
+    <div class="editbar" style="margin-top:0">
+      <button class="editbtn" type="button" onclick="saveChatGPTLink()">Save link</button>
+      <button class="editbtn danger" type="button" onclick="clearChatGPTLink()">Clear link</button>
+    </div>
+    <div id="chatgptLinkStatus" class="note"></div>
+  </div>
+</div>
 </section>
 
 </main>
 
-<button class="ask" onclick="window.open('https://chatgpt.com/share/6aa842cd-48f0-83e8-808d-169a177c8546','_blank','noopener')">✦ Ask ChatGPT</button>
+<button class="ask" onclick="openSavedChatGPT()">✦ Ask ChatGPT</button>
 
 <div id="modalback" class="modalback" onclick="closeModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
@@ -639,10 +653,8 @@ function renderHomeDashboard(){
     </div>
 
     <div class="homeSectionTitle"><b>Quick Access</b></div>
-    <div class="quickGrid">
-      <button class="quickHomeBtn" onclick="show('saved',document.querySelectorAll('nav button')[3])"><span>♡</span>Saved</button>
+    <div class="quickGrid" style="grid-template-columns:repeat(2,1fr)">
       <button class="quickHomeBtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=The+Royal+Park+Hotel+Iconic+Nagoya','_blank')"><span>🏨</span>Hotel</button>
-      <button class="quickHomeBtn" onclick="show('map',document.querySelectorAll('nav button')[2])"><span>⌖</span>Map</button>
       <button class="quickHomeBtn" onclick="show('more',document.querySelectorAll('nav button')[4])"><span>✈️</span>Flight</button>
     </div>
 
@@ -658,11 +670,61 @@ function renderHomeDashboard(){
       </div>`:''}
   `;
 }
+const CHATGPT_LINK_KEY='nagoyaAskChatGPTLink';
+
+function isValidChatGPTLink(url){
+  try{
+    const u=new URL(url);
+    return (u.hostname==='chatgpt.com' || u.hostname.endsWith('.chatgpt.com')) && u.pathname.length>1;
+  }catch(e){return false}
+}
+
+function loadChatGPTLinkSetting(){
+  const input=document.getElementById('chatgptLinkInput');
+  const status=document.getElementById('chatgptLinkStatus');
+  if(!input)return;
+  const url=localStorage.getItem(CHATGPT_LINK_KEY)||'';
+  input.value=url;
+  if(status) status.textContent=url ? 'Saved on this device/browser only.' : 'No ChatGPT link saved on this device.';
+}
+
+function saveChatGPTLink(){
+  const input=document.getElementById('chatgptLinkInput');
+  if(!input)return;
+  const url=(input.value||'').trim();
+  if(!isValidChatGPTLink(url)){
+    alert('Please paste a valid chatgpt.com link.');
+    return;
+  }
+  localStorage.setItem(CHATGPT_LINK_KEY,url);
+  loadChatGPTLinkSetting();
+  alert('Ask ChatGPT link saved on this device/browser only.');
+}
+
+function clearChatGPTLink(){
+  localStorage.removeItem(CHATGPT_LINK_KEY);
+  loadChatGPTLinkSetting();
+}
+
+function openSavedChatGPT(){
+  const url=localStorage.getItem(CHATGPT_LINK_KEY)||'';
+  if(!url){
+    alert('No ChatGPT link saved yet. Go to More → Ask ChatGPT Link to add it on this device.');
+    return;
+  }
+  if(!isValidChatGPTLink(url)){
+    alert('The saved ChatGPT link is invalid. Please update it in More → Ask ChatGPT Link.');
+    return;
+  }
+  window.open(url,'_blank','noopener');
+}
+
 function refresh(){
   const x=D();
   if(document.getElementById('tripLabel'))tripLabel.textContent=x.trip;
   renderHomeDashboard();
   render();
+  setTimeout(loadChatGPTLinkSetting,0);
 }
 function render(){
   const x=DATA.zh, d=x.days[di];
@@ -2061,6 +2123,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   renderMoreInfo();
 });
 
+
+document.addEventListener('DOMContentLoaded',()=>setTimeout(loadChatGPTLinkSetting,0));
 </script>
 
 <div id="moreEditModal" class="modalback" onclick="if(event.target===this)closeMoreEdit()">
