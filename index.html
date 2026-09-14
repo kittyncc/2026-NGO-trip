@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>V44 — Full Backup Including Photos</title>
+<title>V47 — Updated Ask ChatGPT Link</title>
 <style>
 :root{
-  --bg:#f7f6f2;--ink:#252525;--muted:#7b7b76;--accent:#8f4d61;--sage:#6f8374;
-  --soft:#e9ece7;--card:#fff;--line:#e6e3dc;--nav:rgba(255,255,255,.93);--danger:#9a5669;
+  --bg:#F7F5F0;--ink:#3E3B37;--muted:#8A847C;--accent:#B96F55;--sage:#7F8B75;
+  --soft:#E8E2D8;--card:#FFFEFB;--line:#D9D2C9;--nav:rgba(255,254,251,.94);--danger:#A45F50;
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-size:11px;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","PingFang HK","Noto Sans HK",sans-serif}
@@ -356,6 +356,55 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 .backupBtn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:12px;padding:10px 12px;font-size:10px;font-weight:800;cursor:pointer}
 .backupBtn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 .backupMeta{font-size:9px;color:var(--muted);line-height:1.5;margin-top:8px}
+
+.homeDashHero{padding:18px 18px 15px;margin-bottom:12px}
+.homeDashTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.homeDashHero h1{font-size:23px;margin:3px 0 2px}
+.homeRoute{font-size:10px;color:var(--muted);margin-top:4px}
+.homeProgressRow{display:flex;align-items:center;gap:9px;margin-top:13px}
+.homeProgress{height:5px;background:#ecebe6;border-radius:999px;overflow:hidden;flex:1}
+.homeProgress>span{display:block;height:100%;background:var(--sage);border-radius:999px}
+.homeProgressText{font-size:9px;color:var(--muted);white-space:nowrap}
+.homeSectionTitle{display:flex;justify-content:space-between;align-items:center;margin:16px 1px 8px}
+.homeSectionTitle b{font-size:12px}
+.homeTextBtn{border:0;background:none;font-size:9px;color:var(--accent);cursor:pointer}
+.nextUpCard{border:1px solid #ead7dc;background:#fff7f8;border-radius:18px;padding:14px;margin-bottom:12px}
+.nextKicker{font-size:9px;font-weight:900;color:var(--accent);letter-spacing:.08em}
+.nextMain{display:grid;grid-template-columns:54px 1fr;gap:12px;align-items:center;margin-top:8px}
+.nextTime{font-size:17px;font-weight:900}
+.nextTitle{font-size:14px;font-weight:900;line-height:1.25}
+.homeActionRow{display:flex;gap:7px;margin-top:12px}
+.homeAction{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px;font-size:9px;font-weight:800;cursor:pointer}
+.homeAction.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.todayMiniTimeline{border:1px solid var(--line);border-radius:17px;background:#fff;overflow:hidden}
+.todayMiniRow{display:grid;grid-template-columns:47px 1fr 18px;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line);align-items:center;cursor:pointer}
+.todayMiniRow:last-child{border-bottom:0}
+.todayMiniRow.active{background:#fff8f9}
+.todayMiniRow .t{font-size:9px;font-weight:800}
+.todayMiniRow .n{font-size:10px;font-weight:800}
+.todayMiniRow .c{color:var(--muted);font-size:13px}
+.glanceGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.glanceItem{border:1px solid var(--line);border-radius:14px;background:#fff;padding:10px;font-size:9px;line-height:1.4}
+.glanceItem b{display:block;font-size:10px;margin-bottom:2px}
+.quickGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.quickHomeBtn{border:1px solid var(--line);background:#fff;border-radius:14px;padding:10px 4px;font-size:8px;font-weight:800;text-align:center;cursor:pointer}
+.quickHomeBtn span{display:block;font-size:17px;margin-bottom:4px}
+.tomorrowCard{border:1px solid #dce5dc;background:#f5f8f3;border-radius:17px;padding:12px;display:grid;grid-template-columns:1fr 20px;gap:8px;cursor:pointer}
+.tomorrowCard .small{font-size:8px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.tomorrowCard b{font-size:11px;display:block;margin-top:4px}
+
+/* V46 · Japanese Neutral palette */
+body{background:#F7F5F0}
+.hero,.card,.mini,.eventcard,.savecard,.mapPlace{background:#FFFEFB}
+.nextUpCard{border-color:#DFCFC4;background:#F5ECE5}
+.nextKicker,.homeTextBtn{color:#B96F55}
+.homeProgress{background:#E8E2D8}
+.homeProgress>span{background:#8A8176}
+.homeAction.primary{background:#B96F55;border-color:#B96F55}
+.savedMultiChip.active,.savedEditorChoice.active{background:#B96F55;border-color:#B96F55}
+.tomorrowCard{border-color:#D9D2C9;background:#F1EEE8}
+.pill.active{background:#3E3B37;color:#fff;border-color:#3E3B37}
+nav button.on{color:#B96F55}
 </style>
 </head>
 <body>
@@ -363,20 +412,7 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 </div>
 
 <section id="today">
-<div class="hero"><div class="eyebrow">NAGOYA FAMILY TRIP</div><h1 id="heroTitle"></h1><div class="sub" id="heroSub"></div><div style="margin-top:16px;font-size:25px">🌿 ☕ ⛩️ 🥎</div></div>
-<h2 id="nextLabel"></h2>
-<div class="card" onclick="jumpTrip(2)" style="cursor:pointer">
-  <div class="eventcard" style="border:0;padding:4px 0">
-    <div class="time">9/27</div><div><b>🥎 Hong Kong vs Singapore</b><div class="note">13:15 · Anjo Sports Park · Car 2</div></div><div class="chev">›</div>
-  </div>
-</div>
-<h2 id="resLabel"></h2>
-<div class="grid">
-<div class="mini">🍢 <b>9/26 18:00</b><div class="note">Shige Sakae</div></div>
-<div class="mini">🥩 <b>9/27 18:30</b><div class="note">Bakuro Ichidai</div></div>
-<div class="mini">🍱 <b>9/29 11:30</b><div class="note">Okafuji</div></div>
-<div class="mini">🏨 <b>Royal Park</b><div class="note">Sakae</div></div>
-</div>
+  <div id="homeDashboard"></div>
 </section>
 
 <section id="trip" class="hidden">
@@ -467,7 +503,7 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 
 </main>
 
-<button class="ask" onclick="alert('等你俾我呢個 Chat 嘅連結後，我會綁定到呢個按鈕。')">✦ Ask ChatGPT</button>
+<button class="ask" onclick="window.open('https://chatgpt.com/share/6aa842cd-48f0-83e8-808d-169a177c8546','_blank','noopener')">✦ Ask ChatGPT</button>
 
 <div id="modalback" class="modalback" onclick="closeModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
@@ -523,11 +559,109 @@ const DETAILS={"flightCX536": {"icon": "✈️", "kicker": "FLIGHT", "map": "htt
 let lang='zh', di=0;
 
 function D(){ return DATA.zh; }
+
+function homeDayIndex(){
+  const now=new Date();
+  const y=now.getFullYear(),m=now.getMonth()+1,d=now.getDate();
+  if(y===2026 && m===9 && d>=25 && d<=30)return d-25;
+  // Before the trip: preview Day 1. After the trip: keep Day 6.
+  if(y<2026 || (y===2026 && (m<9 || (m===9&&d<25))))return 0;
+  return 5;
+}
+function homeRouteForDay(i){
+  return [
+    'HKG → NGO → Sakae',
+    'Shikemichi → Nagoya Sta. → Sakae',
+    'Sakae → Anjo → Minato',
+    'Sakae → Nagashima → NGO',
+    'Sakae → Atsuta → Osu',
+    'Sakae → Tokoname → NGO'
+  ][i]||'Nagoya';
+}
+function homeGlance(i){
+  return [
+    [['✈️','Arrival','CX536 · 15:05 NGO'],['🚙','Car 1','Alphard pickup 15:30'],['🏨','Hotel','Royal Park · Sakae'],['👨‍👩‍👧','Meet-up','Family together tonight']],
+    [['🛍','Shopping','Takashimaya + Sakae'],['🍢','Dinner','18:00 Shige booked'],['👶','Quinn','Nap / hotel buffer'],['🚙','Transport','Car 1']],
+    [['🚗','2 Cars','Car 2 pickup 09:00'],['🥎','Softball','13:15 HK vs SG'],['👶','Quinn','Family → Minato'],['🥩','Dinner','18:30 private room']],
+    [['🛍','Outlet','Jazz Dream Nagashima'],['✈️','Extra 3','UO671 · 20:45'],['🚗','Car 2','Airport return 19:00'],['👶','Quinn','Flexible outlet day']],
+    [['⛩','Morning','Atsuta Jingu'],['🍱','Lunch','11:30 Okafuji booked'],['🛍','Afternoon','Osu shopping'],['☕','Coffee','Konparu optional']],
+    [['🧳','Checkout','09:00'],['🛍','Shopping','AEON + Costco'],['🚙','Car 1','Return by 14:30'],['✈️','Flight','CX539 · 16:10']]
+  ][i];
+}
+function homeMapsForEvent(v){
+  const q=encodeURIComponent([v.title,v.sub,'Nagoya'].filter(Boolean).join(' '));
+  return 'https://www.google.com/maps/search/?api=1&query='+q;
+}
+function renderHomeDashboard(){
+  const host=document.getElementById('homeDashboard');if(!host)return;
+  const i=homeDayIndex(),day=DATA.zh.days[i],events=day.events||[];
+  const upcoming=events.slice(0,3);
+  const tomorrow=DATA.zh.days[Math.min(i+1,DATA.zh.days.length-1)];
+  const isLast=i===DATA.zh.days.length-1;
+
+  host.innerHTML=`
+    <div class="hero homeDashHero">
+      <div class="homeDashTop">
+        <div>
+          <div class="eyebrow">NAGOYA FAMILY TRIP</div>
+          <h1>Day ${i+1}</h1>
+          <div class="sub">${escapeHtml(day.label.replace(/^Day \\d+ · /,''))}</div>
+          <div class="homeRoute">${escapeHtml(homeRouteForDay(i))}</div>
+        </div>
+        <div style="font-size:22px">🍂</div>
+      </div>
+      <div class="homeProgressRow">
+        <div class="homeProgress"><span style="width:${((i+1)/6)*100}%"></span></div>
+        <div class="homeProgressText">Day ${i+1} of 6</div>
+      </div>
+    </div>
+
+    <div class="homeSectionTitle">
+      <b>NEXT UP</b>
+      <button class="homeTextBtn" onclick="jumpTrip(${i})">See full day</button>
+    </div>
+
+    <div style="display:grid;gap:8px">
+      ${upcoming.map((v,ei)=>`
+        <div class="nextUpCard" style="margin-bottom:0">
+          <div class="nextMain" style="margin-top:0">
+            <div class="nextTime">${escapeHtml(v.time||'')}</div>
+            <div>
+              <div class="nextTitle">${escapeHtml(v.title||'')}</div>
+              <div class="note">${escapeHtml(v.sub||'')}</div>
+            </div>
+          </div>
+          <div class="homeActionRow">
+            <button class="homeAction ${ei===0?'primary':''}" onclick="window.open('${homeMapsForEvent(v)}','_blank')">⌖ Maps</button>
+            <button class="homeAction" onclick="openDetail(${i},${ei})">Details ›</button>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <div class="homeSectionTitle"><b>Quick Access</b></div>
+    <div class="quickGrid">
+      <button class="quickHomeBtn" onclick="show('saved',document.querySelectorAll('nav button')[3])"><span>♡</span>Saved</button>
+      <button class="quickHomeBtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=The+Royal+Park+Hotel+Iconic+Nagoya','_blank')"><span>🏨</span>Hotel</button>
+      <button class="quickHomeBtn" onclick="show('map',document.querySelectorAll('nav button')[2])"><span>⌖</span>Map</button>
+      <button class="quickHomeBtn" onclick="show('more',document.querySelectorAll('nav button')[4])"><span>✈️</span>Flight</button>
+    </div>
+
+    ${!isLast?`
+      <div class="homeSectionTitle"><b>Tomorrow</b></div>
+      <div class="tomorrowCard" onclick="jumpTrip(${i+1})">
+        <div>
+          <div class="small">${escapeHtml(tomorrow.label)}</div>
+          <b>${escapeHtml(tomorrow.title)}</b>
+          <div class="note">${escapeHtml(homeRouteForDay(i+1))}</div>
+        </div>
+        <div class="chev">›</div>
+      </div>`:''}
+  `;
+}
 function refresh(){
   const x=D();
-  heroTitle.textContent=x.title; heroSub.textContent=x.subtitle;
-  nextLabel.textContent=x.next; resLabel.textContent=x.reservations;
-  tripLabel.textContent=x.trip;
+  if(document.getElementById('tripLabel'))tripLabel.textContent=x.trip;
+  renderHomeDashboard();
   render();
 }
 function render(){
