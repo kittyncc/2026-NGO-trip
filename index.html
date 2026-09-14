@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>V42 — Selectable Saved Tags + Custom Tag Creation</title>
+<title>V43 — Data Backup + Phone Transfer</title>
 <style>
 :root{
   --bg:#f7f6f2;--ink:#252525;--muted:#7b7b76;--accent:#8f4d61;--sage:#6f8374;
@@ -350,6 +350,12 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
   border-radius:999px;padding:6px 8px 6px 10px;font-size:9px
 }
 .customTagPill button{border:0;background:transparent;padding:0;cursor:pointer;color:var(--muted);font-size:12px}
+
+.backupCard{margin-top:14px}
+.backupActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.backupBtn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:12px;padding:10px 12px;font-size:10px;font-weight:800;cursor:pointer}
+.backupBtn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.backupMeta{font-size:9px;color:var(--muted);line-height:1.5;margin-top:8px}
 </style>
 </head>
 <body>
@@ -435,6 +441,16 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 <h2>More</h2>
 
 <div id="moreInfoCards"></div>
+<div class="card backupCard">
+  <b>Data Backup & Transfer</b>
+  <div class="note">Export 呢部機嘅 trip data 做一個 JSON backup；喺電話開 app 後 Restore 就可以搬過去。</div>
+  <div class="backupActions">
+    <button class="backupBtn primary" type="button" onclick="exportNagoyaBackup()">⇩ Export backup</button>
+    <button class="backupBtn" type="button" onclick="document.getElementById('backupFileInput').click()">⇧ Restore backup</button>
+    <input id="backupFileInput" type="file" accept=".json,application/json" style="display:none" onchange="restoreNagoyaBackup(this.files && this.files[0]);this.value=''">
+  </div>
+  <div class="backupMeta">包括 itinerary、Saved Places、Map Places、More 等 browser data。Restore 會覆蓋目前裝置內相同資料。</div>
+</div>
 <h2>Confirmed Reservations</h2>
 <div class="card"><b>9/25 · 15:30</b><div class="note">🚙 Toyota Alphard Pick-up</div></div>
 <div class="card"><b>9/25 · 15:00 onward</b><div class="note">🏨 Royal Park Hotel Check-in</div></div>
@@ -1678,6 +1694,40 @@ function openPlaceEditor(kind,index=null){
   placeEditBack.classList.add('open');
 }
 function deletePlace(kind,index){const arr=kind==='map'?MAP_PLACES:SAVED;if(!confirm(`Delete "${arr[index].name}"?`))return;arr.splice(index,1);if(kind==='map'){persistMapPlaces();renderMapPlaces();}else{persistSaved();renderSaved();}placeEditBack.classList.remove('open');}
+
+
+function buildNagoyaBackup(){
+  const storage={};
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k && /^nagoya/i.test(k)) storage[k]=localStorage.getItem(k);
+  }
+  return {app:'2026-NGO-trip',backupVersion:1,exportedAt:new Date().toISOString(),storage};
+}
+function exportNagoyaBackup(){
+  try{
+    const blob=new Blob([JSON.stringify(buildNagoyaBackup(),null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob),a=document.createElement('a'),d=new Date();
+    const stamp=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    a.href=url;a.download='nagoya-trip-backup-'+stamp+'.json';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }catch(e){console.error(e);alert('Backup export failed. Please try again.');}
+}
+async function restoreNagoyaBackup(file){
+  if(!file)return;
+  try{
+    const backup=JSON.parse(await file.text());
+    if(!backup||backup.app!=='2026-NGO-trip'||!backup.storage){
+      alert('呢個唔係有效嘅 Nagoya Trip backup file。');return;
+    }
+    if(!confirm('Restore 會覆蓋呢部裝置目前嘅 Nagoya Trip data。繼續？'))return;
+    Object.entries(backup.storage).forEach(([k,v])=>{
+      if(/^nagoya/i.test(k)&&typeof v==='string')localStorage.setItem(k,v);
+    });
+    alert('Restore 完成 ✓');location.reload();
+  }catch(e){console.error(e);alert('讀取 backup 失敗。');}
+}
 
 function setupTagFilters(){ renderDynamicFilters(); applyMapSearch(); applySavedSearch(); }
 
