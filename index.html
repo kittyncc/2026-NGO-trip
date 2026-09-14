@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>V43 — Data Backup + Phone Transfer</title>
+<title>V44 — Full Backup Including Photos</title>
 <style>
 :root{
   --bg:#f7f6f2;--ink:#252525;--muted:#7b7b76;--accent:#8f4d61;--sage:#6f8374;
@@ -443,13 +443,13 @@ linear-gradient(#dfe5e3 1px,transparent 1px) 0 0/34px 34px,
 <div id="moreInfoCards"></div>
 <div class="card backupCard">
   <b>Data Backup & Transfer</b>
-  <div class="note">Export 呢部機嘅 trip data 做一個 JSON backup；喺電話開 app 後 Restore 就可以搬過去。</div>
+  <div class="note">Export 呢部機嘅 trip data + photos 做一個完整 JSON backup；喺電話開 app 後 Restore 就可以搬過去。</div>
   <div class="backupActions">
-    <button class="backupBtn primary" type="button" onclick="exportNagoyaBackup()">⇩ Export backup</button>
+    <button class="backupBtn primary" type="button" onclick="exportNagoyaBackup()">⇩ Export full backup</button>
     <button class="backupBtn" type="button" onclick="document.getElementById('backupFileInput').click()">⇧ Restore backup</button>
     <input id="backupFileInput" type="file" accept=".json,application/json" style="display:none" onchange="restoreNagoyaBackup(this.files && this.files[0]);this.value=''">
   </div>
-  <div class="backupMeta">包括 itinerary、Saved Places、Map Places、More 等 browser data。Restore 會覆蓋目前裝置內相同資料。</div>
+  <div class="backupMeta">包括 itinerary、Saved Places、Map Places、More，以及 itinerary details 入面上載嘅相片。相多時 backup file 會比較大。</div>
 </div>
 <h2>Confirmed Reservations</h2>
 <div class="card"><b>9/25 · 15:30</b><div class="note">🚙 Toyota Alphard Pick-up</div></div>
@@ -1696,23 +1696,95 @@ function openPlaceEditor(kind,index=null){
 function deletePlace(kind,index){const arr=kind==='map'?MAP_PLACES:SAVED;if(!confirm(`Delete "${arr[index].name}"?`))return;arr.splice(index,1);if(kind==='map'){persistMapPlaces();renderMapPlaces();}else{persistSaved();renderSaved();}placeEditBack.classList.remove('open');}
 
 
-function buildNagoyaBackup(){
+
+function blobToDataURL(blob){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(reader.result);
+    reader.onerror=()=>reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+function dataURLToBlob(dataURL){
+  const parts=String(dataURL).split(',');
+  const mime=(parts[0].match(/data:([^;]+)/)||[])[1]||'application/octet-stream';
+  const bytes=atob(parts[1]||'');
+  const arr=new Uint8Array(bytes.length);
+  for(let i=0;i<bytes.length;i++)arr[i]=bytes.charCodeAt(i);
+  return new Blob([arr],{type:mime});
+}
+async function exportAllEventPhotos(){
+  const db=await openPhotoDB();
+  const rows=await new Promise((resolve,reject)=>{
+    const tx=db.transaction(PHOTO_STORE,'readonly');
+    const req=tx.objectStore(PHOTO_STORE).getAll();
+    req.onsuccess=()=>resolve(req.result||[]);
+    req.onerror=()=>reject(req.error);
+    tx.oncomplete=()=>db.close();
+  });
+  const out=[];
+  for(const row of rows){
+    out.push({
+      eventKey:row.eventKey,
+      name:row.name||'photo',
+      type:row.type||row.blob?.type||'image/jpeg',
+      size:row.size||row.blob?.size||0,
+      createdAt:row.createdAt||Date.now(),
+      dataURL:await blobToDataURL(row.blob)
+    });
+  }
+  return out;
+}
+async function restoreAllEventPhotos(photos){
+  if(!Array.isArray(photos))return;
+  const db=await openPhotoDB();
+  await new Promise((resolve,reject)=>{
+    const tx=db.transaction(PHOTO_STORE,'readwrite');
+    tx.objectStore(PHOTO_STORE).clear();
+    tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
+  });
+  for(const p of photos){
+    await new Promise((resolve,reject)=>{
+      const tx=db.transaction(PHOTO_STORE,'readwrite');
+      tx.objectStore(PHOTO_STORE).add({
+        eventKey:p.eventKey,
+        name:p.name||'photo',
+        type:p.type||'image/jpeg',
+        size:p.size||0,
+        createdAt:p.createdAt||Date.now(),
+        blob:dataURLToBlob(p.dataURL)
+      });
+      tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
+    });
+  }
+  db.close();
+}
+async function buildNagoyaBackup(){
   const storage={};
   for(let i=0;i<localStorage.length;i++){
     const k=localStorage.key(i);
-    if(k && /^nagoya/i.test(k)) storage[k]=localStorage.getItem(k);
+    if(k && (/^nagoya/i.test(k)||/^nagoyaDetailRemark_/i.test(k))) storage[k]=localStorage.getItem(k);
   }
-  return {app:'2026-NGO-trip',backupVersion:1,exportedAt:new Date().toISOString(),storage};
+  const photos=await exportAllEventPhotos();
+  return {app:'2026-NGO-trip',backupVersion:2,exportedAt:new Date().toISOString(),storage,photos};
 }
-function exportNagoyaBackup(){
+async function exportNagoyaBackup(){
   try{
-    const blob=new Blob([JSON.stringify(buildNagoyaBackup(),null,2)],{type:'application/json'});
+    const btn=event?.currentTarget;
+    if(btn){btn.disabled=true;btn.textContent='Preparing…';}
+    const backup=await buildNagoyaBackup();
+    const blob=new Blob([JSON.stringify(backup)],{type:'application/json'});
     const url=URL.createObjectURL(blob),a=document.createElement('a'),d=new Date();
     const stamp=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    a.href=url;a.download='nagoya-trip-backup-'+stamp+'.json';
+    a.href=url;a.download='nagoya-trip-full-backup-'+stamp+'.json';
     document.body.appendChild(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),1000);
-  }catch(e){console.error(e);alert('Backup export failed. Please try again.');}
+    if(btn){btn.disabled=false;btn.textContent='⇩ Export full backup';}
+    alert(`Backup ready ✓\nIncluded ${backup.photos.length} photo${backup.photos.length===1?'':'s'}.`);
+  }catch(e){
+    console.error(e);alert('Backup export failed. Please try again.');
+    const btn=document.querySelector('.backupBtn.primary');if(btn){btn.disabled=false;btn.textContent='⇩ Export full backup';}
+  }
 }
 async function restoreNagoyaBackup(file){
   if(!file)return;
@@ -1721,12 +1793,15 @@ async function restoreNagoyaBackup(file){
     if(!backup||backup.app!=='2026-NGO-trip'||!backup.storage){
       alert('呢個唔係有效嘅 Nagoya Trip backup file。');return;
     }
-    if(!confirm('Restore 會覆蓋呢部裝置目前嘅 Nagoya Trip data。繼續？'))return;
+    const photoCount=Array.isArray(backup.photos)?backup.photos.length:0;
+    if(!confirm(`Restore 會覆蓋呢部裝置目前嘅 Nagoya Trip data${photoCount?`，包括 ${photoCount} 張相`:''}。繼續？`))return;
     Object.entries(backup.storage).forEach(([k,v])=>{
-      if(/^nagoya/i.test(k)&&typeof v==='string')localStorage.setItem(k,v);
+      if((/^nagoya/i.test(k)||/^nagoyaDetailRemark_/i.test(k))&&typeof v==='string')localStorage.setItem(k,v);
     });
-    alert('Restore 完成 ✓');location.reload();
-  }catch(e){console.error(e);alert('讀取 backup 失敗。');}
+    if(Array.isArray(backup.photos))await restoreAllEventPhotos(backup.photos);
+    alert(`Restore 完成 ✓${photoCount?`\n已還原 ${photoCount} 張相。`:''}`);
+    location.reload();
+  }catch(e){console.error(e);alert('讀取 backup 失敗。檔案可能太大、損壞，或者 browser 儲存空間不足。');}
 }
 
 function setupTagFilters(){ renderDynamicFilters(); applyMapSearch(); applySavedSearch(); }
