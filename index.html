@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f7f6f2">
-<title>V49 — Private Device-Only Ask ChatGPT Link</title>
+<title>V50 — Simple Shopping Checklist</title>
 <style>
 :root{
   --bg:#F7F5F0;--ink:#3E3B37;--muted:#8A847C;--accent:#B96F55;--sage:#7F8B75;
@@ -405,6 +405,27 @@ body{background:#F7F5F0}
 .tomorrowCard{border-color:#D9D2C9;background:#F1EEE8}
 .pill.active{background:#3E3B37;color:#fff;border-color:#3E3B37}
 nav button.on{color:#B96F55}
+
+/* V50 · Simple Shopping Checklist */
+.shoppingHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.shoppingHead h2{margin:0}
+.shoppingProgress{font-size:10px;color:var(--muted);margin-top:4px}
+.shoppingToolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0 14px}
+.hideBoughtBtn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 11px;font:inherit;font-weight:800}
+.shopList{display:grid;gap:8px}
+.shopItem{display:grid;grid-template-columns:30px 1fr 28px;gap:8px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:15px;padding:12px}
+.shopCheck{width:24px;height:24px;border:1.5px solid #B7ADA0;border-radius:50%;background:transparent;color:white;padding:0;font-size:14px;line-height:21px}
+.shopItem.bought{opacity:.56}
+.shopItem.bought .shopCheck{background:var(--accent);border-color:var(--accent)}
+.shopItem.bought .shopName{text-decoration:line-through}
+.shopName{font-size:12px;font-weight:850;line-height:1.35}
+.shopRemark{font-size:9px;color:var(--muted);margin-top:4px;line-height:1.4}
+.shopEdit{border:0;background:transparent;color:var(--muted);font-size:16px;padding:2px}
+.shopEmpty{border:1px dashed var(--line);border-radius:15px;padding:22px;text-align:center;color:var(--muted)}
+.shopFormLabel{display:block;font-size:9px;font-weight:900;color:var(--muted);margin:13px 0 6px;text-transform:uppercase;letter-spacing:.7px}
+.shopFormInput,.shopFormText{width:100%;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:11px 12px;font:inherit}
+.shopFormText{min-height:82px;resize:vertical}
+nav button{min-width:0}
 </style>
 </head>
 <body>
@@ -472,6 +493,19 @@ nav button.on{color:#B96F55}
   <div id="savedList"></div>
 </section>
 
+
+
+<section id="shopping" class="hidden">
+  <div class="shoppingHead">
+    <div><h2>Shopping List</h2><div id="shoppingProgress" class="shoppingProgress"></div></div>
+    <button class="addFab" type="button" aria-label="Add shopping item" onclick="openShoppingEditor()">＋</button>
+  </div>
+  <div class="shoppingToolbar">
+    <div class="hint" style="margin:0">Tap ○ to mark bought.</div>
+    <button id="hideBoughtBtn" class="hideBoughtBtn" type="button" onclick="toggleHideBought()">Hide bought</button>
+  </div>
+  <div id="shoppingList" class="shopList"></div>
+</section>
 
 <section id="more" class="hidden">
 <h2>More</h2>
@@ -544,6 +578,25 @@ nav button.on{color:#B96F55}
   </div>
 </div>
 
+
+<div id="shoppingEditBack" class="modalback" onclick="closeShoppingEditor(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modalclose" type="button" onclick="shoppingEditBack.classList.remove('open')">×</button>
+    <div class="modalkicker">SHOPPING</div>
+    <div class="modaltitle" id="shoppingEditTitle">Add item</div>
+    <form id="shoppingEditForm" onsubmit="saveShoppingItem(event)">
+      <label class="shopFormLabel" for="shoppingName">Item</label>
+      <input id="shoppingName" class="shopFormInput" maxlength="120" required placeholder="What do you want to buy?">
+      <label class="shopFormLabel" for="shoppingRemark">Remark</label>
+      <textarea id="shoppingRemark" class="shopFormText" maxlength="500" placeholder="Optional note"></textarea>
+      <div class="editbar" style="margin-top:14px">
+        <button class="editbtn" type="submit">Save</button>
+        <button id="shoppingDeleteBtn" class="editbtn danger hidden" type="button" onclick="deleteShoppingItem()">Delete</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div id="photoViewer" class="photoViewer" onclick="closePhotoViewer()">
   <button type="button" onclick="closePhotoViewer();event.stopPropagation()">×</button>
   <img id="photoViewerImg" alt="Attachment preview" onclick="event.stopPropagation()">
@@ -557,7 +610,9 @@ nav button.on{color:#B96F55}
 <button aria-label="Map" onclick="show('map',this)">
 <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><path d="M12 2v20M2 12h20"/></svg><span id="navMap"></span></button>
 <button aria-label="Saved" onclick="show('saved',this)">
-<svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg><span id="navSaved"></span></button>
+<svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg><span id="navSaved"></span></button> 
+<button aria-label="Shopping" onclick="show('shopping',this)">
+<svg viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg><span></span></button>
 <button aria-label="More" onclick="show('more',this)">
 <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.8" fill="currentColor" stroke="none"/></svg><span id="navMore"></span></button>
 </nav>
@@ -655,7 +710,7 @@ function renderHomeDashboard(){
     <div class="homeSectionTitle"><b>Quick Access</b></div>
     <div class="quickGrid" style="grid-template-columns:repeat(2,1fr)">
       <button class="quickHomeBtn" onclick="window.open('https://www.google.com/maps/search/?api=1&query=The+Royal+Park+Hotel+Iconic+Nagoya','_blank')"><span>🏨</span>Hotel</button>
-      <button class="quickHomeBtn" onclick="show('more',document.querySelectorAll('nav button')[4])"><span>✈️</span>Flight</button>
+      <button class="quickHomeBtn" onclick="show('more',document.querySelectorAll('nav button')[5])"><span>✈️</span>Flight</button>
     </div>
 
     ${!isLast?`
@@ -725,6 +780,7 @@ function refresh(){
   renderHomeDashboard();
   render();
   setTimeout(loadChatGPTLinkSetting,0);
+  renderShopping();
 }
 function render(){
   const x=DATA.zh, d=x.days[di];
@@ -842,7 +898,96 @@ function autoSortCurrentDay(){
   render();
 }
 
+
+const SHOPPING_KEY='nagoyaShoppingChecklist';
+let shoppingEditIndex=null;
+let shoppingHideBought=false;
+
+function shoppingData(){
+  try{
+    const v=JSON.parse(localStorage.getItem(SHOPPING_KEY)||'[]');
+    return Array.isArray(v)?v:[];
+  }catch(e){return []}
+}
+function saveShoppingData(items){
+  localStorage.setItem(SHOPPING_KEY,JSON.stringify(items));
+}
+function renderShopping(){
+  const host=document.getElementById('shoppingList');
+  if(!host)return;
+  const all=shoppingData();
+  const bought=all.filter(x=>x.bought).length;
+  const progress=document.getElementById('shoppingProgress');
+  if(progress) progress.textContent=`${bought} / ${all.length} bought`;
+  const btn=document.getElementById('hideBoughtBtn');
+  if(btn) btn.textContent=shoppingHideBought?'Show bought':'Hide bought';
+
+  let rows=all.map((item,index)=>({item,index}));
+  if(shoppingHideBought) rows=rows.filter(x=>!x.item.bought);
+  rows.sort((a,b)=>Number(a.item.bought)-Number(b.item.bought) || a.index-b.index);
+
+  host.innerHTML=rows.length?rows.map(({item,index})=>`
+    <div class="shopItem ${item.bought?'bought':''}">
+      <button class="shopCheck" type="button" aria-label="${item.bought?'Mark not bought':'Mark bought'}" onclick="toggleShoppingBought(${index})">${item.bought?'✓':''}</button>
+      <div onclick="openShoppingEditor(${index})">
+        <div class="shopName">${esc(item.name)}</div>
+        ${item.remark?`<div class="shopRemark">${esc(item.remark)}</div>`:''}
+      </div>
+      <button class="shopEdit" type="button" aria-label="Edit item" onclick="openShoppingEditor(${index})">›</button>
+    </div>`).join(''):
+    `<div class="shopEmpty">${all.length?'All visible items are bought ✓':'No shopping items yet.<br>Tap ＋ to add one.'}</div>`;
+}
+function toggleShoppingBought(index){
+  const items=shoppingData();
+  if(!items[index])return;
+  items[index].bought=!items[index].bought;
+  saveShoppingData(items);
+  renderShopping();
+}
+function toggleHideBought(){
+  shoppingHideBought=!shoppingHideBought;
+  renderShopping();
+}
+function openShoppingEditor(index=null){
+  shoppingEditIndex=(index===null||index===undefined)?null:Number(index);
+  const item=shoppingEditIndex===null?null:shoppingData()[shoppingEditIndex];
+  document.getElementById('shoppingEditTitle').textContent=item?'Edit item':'Add item';
+  document.getElementById('shoppingName').value=item?.name||'';
+  document.getElementById('shoppingRemark').value=item?.remark||'';
+  document.getElementById('shoppingDeleteBtn').classList.toggle('hidden',!item);
+  document.getElementById('shoppingEditBack').classList.add('open');
+  setTimeout(()=>document.getElementById('shoppingName').focus(),80);
+}
+function closeShoppingEditor(event){
+  if(event && event.target!==document.getElementById('shoppingEditBack'))return;
+  document.getElementById('shoppingEditBack').classList.remove('open');
+}
+function saveShoppingItem(event){
+  event.preventDefault();
+  const name=document.getElementById('shoppingName').value.trim();
+  const remark=document.getElementById('shoppingRemark').value.trim();
+  if(!name)return;
+  const items=shoppingData();
+  if(shoppingEditIndex===null) items.push({name,remark,bought:false});
+  else if(items[shoppingEditIndex]) items[shoppingEditIndex]={...items[shoppingEditIndex],name,remark};
+  saveShoppingData(items);
+  document.getElementById('shoppingEditBack').classList.remove('open');
+  renderShopping();
+}
+function deleteShoppingItem(){
+  if(shoppingEditIndex===null)return;
+  const items=shoppingData();
+  const item=items[shoppingEditIndex];
+  if(!item)return;
+  if(!confirm(`Delete "${item.name}"?`))return;
+  items.splice(shoppingEditIndex,1);
+  saveShoppingData(items);
+  document.getElementById('shoppingEditBack').classList.remove('open');
+  renderShopping();
+}
+
 function show(id,b){
+  if(id==='shopping')renderShopping();
   document.querySelectorAll('main>section').forEach(s=>s.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
   document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));
